@@ -10,7 +10,7 @@ from scripts.analyze_forced_choice import _roc_auc
 from scripts.analyze_slam_omni_diagnostics import _conditioned_parallelism
 from scripts.analyze_decision_transfer import build_transfer_rows, summarize_transfer
 from scripts.analyze_activation_patching import build_mechanism_rows, summarize_patch_rows
-from scripts.run_activation_patching import _pair_indices, _patch_hook
+from scripts.run_activation_patching import _counterfactual_margin_effects, _pair_indices, _patch_hook
 
 try:
     import torch as torch_lib
@@ -19,11 +19,30 @@ except ImportError:  # Local metric-only environments do not need torch.
 
 
 class DiagnosticMetricTests(unittest.TestCase):
+    def test_counterfactual_effect_uses_both_candidate_margins(self) -> None:
+        effects = _counterfactual_margin_effects(
+            baseline_happy_happy_score=1.0,
+            baseline_happy_sad_score=0.0,
+            baseline_sad_happy_score=-1.0,
+            baseline_sad_sad_score=0.0,
+            patched_happy_target_happy_score=0.2,
+            patched_happy_target_sad_score=0.1,
+            patched_sad_target_happy_score=-0.1,
+            patched_sad_target_sad_score=0.0,
+        )
+        self.assertAlmostEqual(effects["baseline_happy_margin"], 1.0)
+        self.assertAlmostEqual(effects["baseline_sad_margin"], -1.0)
+        self.assertAlmostEqual(effects["patched_happy_target_margin"], 0.1)
+        self.assertAlmostEqual(effects["patched_sad_target_margin"], -0.1)
+        self.assertAlmostEqual(effects["happy_effect_toward_sad"], 0.9)
+        self.assertAlmostEqual(effects["sad_effect_toward_happy"], 0.9)
+        self.assertAlmostEqual(effects["counterfactual_effect"], 0.9)
+
     def test_activation_patch_effect_and_mechanism_mapping(self) -> None:
         rows = []
-        for patch_kind, patched_happy, patched_sad in (
-            ("audio_tokens", -1.4, -0.6),
-            ("decision_token", -1.8, -0.2),
+        for patch_kind, patched_happy_margin, patched_sad_margin in (
+            ("audio_tokens", 0.0, 0.0),
+            ("decision_token", -0.2, 0.2),
         ):
             rows.append(
                 {
@@ -31,16 +50,16 @@ class DiagnosticMetricTests(unittest.TestCase):
                     "layer_index": "7",
                     "layer": "layer_7",
                     "patch_kind": patch_kind,
-                    "baseline_happy_score": "-1.0",
-                    "baseline_sad_score": "-1.0",
-                    "patched_happy_from_sad_score": str(patched_happy),
-                    "patched_sad_from_happy_score": str(patched_sad),
+                    "baseline_happy_margin": "1.0",
+                    "baseline_sad_margin": "-1.0",
+                    "patched_happy_target_margin": str(patched_happy_margin),
+                    "patched_sad_target_margin": str(patched_sad_margin),
                     "error": "",
                 }
             )
         summaries = summarize_patch_rows(rows)
         self.assertEqual(len(summaries), 2)
-        self.assertAlmostEqual(summaries[0]["mean_counterfactual_effect"], 0.4)
+        self.assertAlmostEqual(summaries[0]["mean_counterfactual_effect"], 1.0)
         mechanisms = build_mechanism_rows(summaries)
         self.assertEqual(len(mechanisms), 1)
         self.assertIn("downstream readout", mechanisms[0]["interpretation"])

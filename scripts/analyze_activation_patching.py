@@ -17,10 +17,10 @@ REQUIRED_COLUMNS = {
     "layer_index",
     "layer",
     "patch_kind",
-    "baseline_happy_score",
-    "baseline_sad_score",
-    "patched_happy_from_sad_score",
-    "patched_sad_from_happy_score",
+    "baseline_happy_margin",
+    "baseline_sad_margin",
+    "patched_happy_target_margin",
+    "patched_sad_target_margin",
 }
 
 
@@ -34,10 +34,10 @@ def _read_rows(path: Path) -> list[dict[str, str]]:
 
 
 def _effect_values(row: dict[str, str]) -> tuple[float, float, float]:
-    baseline_happy = float(row["baseline_happy_score"])
-    baseline_sad = float(row["baseline_sad_score"])
-    patched_happy = float(row["patched_happy_from_sad_score"])
-    patched_sad = float(row["patched_sad_from_happy_score"])
+    baseline_happy = float(row["baseline_happy_margin"])
+    baseline_sad = float(row["baseline_sad_margin"])
+    patched_happy = float(row["patched_happy_target_margin"])
+    patched_sad = float(row["patched_sad_target_margin"])
     happy_effect = baseline_happy - patched_happy
     sad_effect = patched_sad - baseline_sad
     return happy_effect, sad_effect, 0.5 * (happy_effect + sad_effect)
@@ -149,10 +149,13 @@ def _write_plot(output_dir: Path, summaries: list[dict[str, Any]], mechanism_row
     }
     fig, axes = plt.subplots(2, 2, figsize=(14, 9), constrained_layout=True)
     for kind, label in (("audio_tokens", "audio-token patch"), ("decision_token", "decision-token patch")):
-        values = [by_kind[kind][layer]["mean_counterfactual_effect"] for layer in layers]
-        axes[0, 0].plot(layers, values, marker=".", label=label)
-        directions = [by_kind[kind][layer]["both_directions_fraction"] for layer in layers]
-        axes[0, 1].plot(layers, directions, marker=".", label=label)
+        available_layers = [layer for layer in layers if layer in by_kind[kind]]
+        if not available_layers:
+            continue
+        values = [by_kind[kind][layer]["mean_counterfactual_effect"] for layer in available_layers]
+        axes[0, 0].plot(available_layers, values, marker=".", label=label)
+        directions = [by_kind[kind][layer]["both_directions_fraction"] for layer in available_layers]
+        axes[0, 1].plot(available_layers, directions, marker=".", label=label)
     axes[0, 0].axhline(0.0, color="0.5", linestyle="--", linewidth=1)
     axes[0, 0].set(title="Mean counterfactual effect", xlabel="LLM layer", ylabel="CE in log-likelihood margin")
     axes[0, 0].grid(alpha=0.25)

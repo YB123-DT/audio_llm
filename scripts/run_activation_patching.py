@@ -431,6 +431,40 @@ def _score_direction(
     return happy_scores, sad_scores
 
 
+def _counterfactual_margin_effects(
+    *,
+    baseline_happy_happy_score: float,
+    baseline_happy_sad_score: float,
+    baseline_sad_happy_score: float,
+    baseline_sad_sad_score: float,
+    patched_happy_target_happy_score: float,
+    patched_happy_target_sad_score: float,
+    patched_sad_target_happy_score: float,
+    patched_sad_target_sad_score: float,
+) -> dict[str, float]:
+    """Compute the two S-margin changes and the symmetric CE effect.
+
+    Each margin uses both candidate likelihoods from the same target sample.
+    The positive direction is donor-aligned: a happy target should move toward
+    the sad donor, while a sad target should move toward the happy donor.
+    """
+    baseline_happy_margin = baseline_happy_happy_score - baseline_happy_sad_score
+    baseline_sad_margin = baseline_sad_happy_score - baseline_sad_sad_score
+    patched_happy_target_margin = patched_happy_target_happy_score - patched_happy_target_sad_score
+    patched_sad_target_margin = patched_sad_target_happy_score - patched_sad_target_sad_score
+    happy_effect = baseline_happy_margin - patched_happy_target_margin
+    sad_effect = patched_sad_target_margin - baseline_sad_margin
+    return {
+        "baseline_happy_margin": baseline_happy_margin,
+        "baseline_sad_margin": baseline_sad_margin,
+        "patched_happy_target_margin": patched_happy_target_margin,
+        "patched_sad_target_margin": patched_sad_target_margin,
+        "happy_effect_toward_sad": happy_effect,
+        "sad_effect_toward_happy": sad_effect,
+        "counterfactual_effect": 0.5 * (happy_effect + sad_effect),
+    }
+
+
 def _self_patch_check(
     torch: Any,
     model: Any,
@@ -593,10 +627,18 @@ def run(args: argparse.Namespace) -> None:
         "layer",
         "patch_site",
         "patch_kind",
-        "baseline_happy_score",
-        "baseline_sad_score",
-        "patched_happy_from_sad_score",
-        "patched_sad_from_happy_score",
+        "baseline_happy_happy_score",
+        "baseline_happy_sad_score",
+        "baseline_sad_happy_score",
+        "baseline_sad_sad_score",
+        "baseline_happy_margin",
+        "baseline_sad_margin",
+        "patched_happy_target_happy_score",
+        "patched_happy_target_sad_score",
+        "patched_sad_target_happy_score",
+        "patched_sad_target_sad_score",
+        "patched_happy_target_margin",
+        "patched_sad_target_margin",
         "happy_effect_toward_sad",
         "sad_effect_toward_happy",
         "counterfactual_effect",
@@ -613,7 +655,7 @@ def run(args: argparse.Namespace) -> None:
                 happy_donors = [pair["happy_index"] for pair in pairs]
                 happy_targets = [pair["happy_index"] for pair in pairs]
                 sad_donors = [pair["sad_index"] for pair in pairs]
-                _, patched_sad_scores = _score_direction(
+                patched_sad_happy_scores, patched_sad_sad_scores = _score_direction(
                     torch,
                     model,
                     prefixes,
@@ -628,7 +670,7 @@ def run(args: argparse.Namespace) -> None:
                     device,
                     args.batch_size,
                 )
-                patched_happy_scores, _ = _score_direction(
+                patched_happy_happy_scores, patched_happy_sad_scores = _score_direction(
                     torch,
                     model,
                     prefixes,
@@ -646,8 +688,16 @@ def run(args: argparse.Namespace) -> None:
                 for pair in pairs:
                     happy_index = pair["happy_index"]
                     sad_index = pair["sad_index"]
-                    sad_effect = patched_sad_scores[sad_index] - sad_baseline[sad_index]
-                    happy_effect = happy_baseline[happy_index] - patched_happy_scores[happy_index]
+                    effects = _counterfactual_margin_effects(
+                        baseline_happy_happy_score=float(happy_baseline[happy_index]),
+                        baseline_happy_sad_score=float(sad_baseline[happy_index]),
+                        baseline_sad_happy_score=float(happy_baseline[sad_index]),
+                        baseline_sad_sad_score=float(sad_baseline[sad_index]),
+                        patched_happy_target_happy_score=patched_happy_happy_scores[happy_index],
+                        patched_happy_target_sad_score=patched_happy_sad_scores[happy_index],
+                        patched_sad_target_happy_score=patched_sad_happy_scores[sad_index],
+                        patched_sad_target_sad_score=patched_sad_sad_scores[sad_index],
+                    )
                     writer.writerow(
                         {
                             "pair_id": pair["pair_id"],
@@ -667,15 +717,23 @@ def run(args: argparse.Namespace) -> None:
                             "layer": f"layer_{layer_index}",
                             "patch_site": "post_decoder_block_output",
                             "patch_kind": patch_kind,
-                            "baseline_happy_score": happy_baseline[happy_index],
-                            "baseline_sad_score": sad_baseline[sad_index],
-                            "patched_happy_from_sad_score": patched_happy_scores[happy_index],
-                            "patched_sad_from_happy_score": patched_sad_scores[sad_index],
-                            "happy_effect_toward_sad": happy_effect,
-                            "sad_effect_toward_happy": sad_effect,
-                            "counterfactual_effect": 0.5 * (happy_effect + sad_effect),
-                            "happy_direction": happy_effect > 0,
-                            "sad_direction": sad_effect > 0,
+                            "baseline_happy_happy_score": float(happy_baseline[happy_index]),
+                            "baseline_happy_sad_score": float(sad_baseline[happy_index]),
+                            "baseline_sad_happy_score": float(happy_baseline[sad_index]),
+                            "baseline_sad_sad_score": float(sad_baseline[sad_index]),
+                            "baseline_happy_margin": effects["baseline_happy_margin"],
+                            "baseline_sad_margin": effects["baseline_sad_margin"],
+                            "patched_happy_target_happy_score": patched_happy_happy_scores[happy_index],
+                            "patched_happy_target_sad_score": patched_happy_sad_scores[happy_index],
+                            "patched_sad_target_happy_score": patched_sad_happy_scores[sad_index],
+                            "patched_sad_target_sad_score": patched_sad_sad_scores[sad_index],
+                            "patched_happy_target_margin": effects["patched_happy_target_margin"],
+                            "patched_sad_target_margin": effects["patched_sad_target_margin"],
+                            "happy_effect_toward_sad": effects["happy_effect_toward_sad"],
+                            "sad_effect_toward_happy": effects["sad_effect_toward_happy"],
+                            "counterfactual_effect": effects["counterfactual_effect"],
+                            "happy_direction": effects["happy_effect_toward_sad"] > 0,
+                            "sad_direction": effects["sad_effect_toward_happy"] > 0,
                             "error": "",
                         }
                     )
