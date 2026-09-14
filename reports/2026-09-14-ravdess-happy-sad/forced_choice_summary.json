@@ -1,0 +1,88 @@
+{
+  "conditions": [
+    {
+      "condition_id": "lower_prompt__lower_spaced",
+      "prompt": "Listen to the speech. Is the speaker happy or sad? Answer only happy or sad.",
+      "happy_verbalizer": " happy",
+      "sad_verbalizer": " sad",
+      "happy_token_ids": "[6247]",
+      "sad_token_ids": "[12421]",
+      "n_rows": 192,
+      "n_pairs": 96,
+      "forced_choice_accuracy": 0.5,
+      "correct_count": 96,
+      "predicted_counts": {
+        "sad": 192
+      },
+      "roc_auc": 0.5241970486111112,
+      "pair_direction_positive_fraction": 0.5,
+      "pair_direction_tie_count": 0,
+      "pair_margin_mean": 0.041401445865631104,
+      "pair_margin_min": -1.3639230728149414,
+      "pair_margin_max": 1.1896848678588867
+    },
+    {
+      "condition_id": "lower_prompt__upper_spaced",
+      "prompt": "Listen to the speech. Is the speaker happy or sad? Answer only happy or sad.",
+      "happy_verbalizer": " HAPPY",
+      "sad_verbalizer": " SAD",
+      "happy_token_ids": "[86777, 56]",
+      "sad_token_ids": "[328, 1808]",
+      "n_rows": 192,
+      "n_pairs": 96,
+      "forced_choice_accuracy": 0.5,
+      "correct_count": 96,
+      "predicted_counts": {
+        "happy": 192
+      },
+      "roc_auc": 0.5,
+      "pair_direction_positive_fraction": 0.4583333333333333,
+      "pair_direction_tie_count": 0,
+      "pair_margin_mean": 0.016280333201090496,
+      "pair_margin_min": -2.6362571716308594,
+      "pair_margin_max": 2.4854698181152344
+    },
+    {
+      "condition_id": "upper_prompt__lower_spaced",
+      "prompt": "Listen to the speech. Is the speaker HAPPY or SAD? Answer only HAPPY or SAD.",
+      "happy_verbalizer": " happy",
+      "sad_verbalizer": " sad",
+      "happy_token_ids": "[6247]",
+      "sad_token_ids": "[12421]",
+      "n_rows": 192,
+      "n_pairs": 96,
+      "forced_choice_accuracy": 0.5,
+      "correct_count": 96,
+      "predicted_counts": {
+        "sad": 192
+      },
+      "roc_auc": 0.5211588541666666,
+      "pair_direction_positive_fraction": 0.4895833333333333,
+      "pair_direction_tie_count": 0,
+      "pair_margin_mean": 0.032580683628718056,
+      "pair_margin_min": -1.237462043762207,
+      "pair_margin_max": 1.1632843017578125
+    },
+    {
+      "condition_id": "upper_prompt__upper_spaced",
+      "prompt": "Listen to the speech. Is the speaker HAPPY or SAD? Answer only HAPPY or SAD.",
+      "happy_verbalizer": " HAPPY",
+      "sad_verbalizer": " SAD",
+      "happy_token_ids": "[86777, 56]",
+      "sad_token_ids": "[328, 1808]",
+      "n_rows": 192,
+      "n_pairs": 96,
+      "forced_choice_accuracy": 0.5,
+      "correct_count": 96,
+      "predicted_counts": {
+        "happy": 192
+      },
+      "roc_auc": 0.4864366319444444,
+      "pair_direction_positive_fraction": 0.4895833333333333,
+      "pair_direction_tie_count": 0,
+      "pair_margin_mean": -0.005124966303507487,
+      "pair_margin_min": -2.62432861328125,
+      "pair_margin_max": 2.54730224609375
+    }
+  ]
+}

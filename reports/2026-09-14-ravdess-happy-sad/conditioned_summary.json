@@ -1,0 +1,52 @@
+{
+  "n_rows": 192,
+  "n_pairs": 96,
+  "actors": [
+    "01",
+    "02",
+    "03",
+    "04",
+    "05",
+    "06",
+    "07",
+    "08",
+    "09",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21",
+    "22",
+    "23",
+    "24"
+  ],
+  "held_out_actors": [
+    "19",
+    "20",
+    "21",
+    "22",
+    "23",
+    "24"
+  ],
+  "prompt": "Listen to the speech. Is the speaker HAPPY or SAD? Answer only HAPPY or SAD.",
+  "feature_families": [
+    "audio_encoder",
+    "projector",
+    "llm_audio_mean",
+    "llm_decision",
+    "llm_prompt_last"
+  ],
+  "parallelism_scopes": {
+    "all": "all matched-pair sad-minus-happy deltas",
+    "text": "statement 01 vs 02 with actor and repetition fixed",
+    "speaker": "actor comparisons with statement and repetition fixed",
+    "repetition": "repetition comparisons with actor and statement fixed"
+  }
+}

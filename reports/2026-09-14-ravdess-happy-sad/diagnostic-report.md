@@ -40,19 +40,31 @@ Answer only HAPPY or SAD.
 
 - 192/192 条输出都没有出现独立的 `HAPPY` 或 `SAD` 标签
 - `predicted=unknown`：192 条
-- 全部样本 accuracy：0/192 = 0.0%
+- label compliance/coverage：0/192 = 0.0%
 - 可解析样本数：0，因此可解析准确率不定义
 - 典型原始输出：`It's be the weather. It you`、`It's be not be not be the`
 
 8 个新 token 的确可能让句子看起来不完整，所以追加了两个更长的生成预算。两组重跑均覆盖同一 192 条样本，分块完整性为 6×32：
 
-| `max_new_tokens` | 样本数 | 含 HAPPY/SAD 的输出 | 正确数 | accuracy | 原始输出字符数（min / median / max） |
+| `max_new_tokens` | 样本数 | 含 HAPPY/SAD 的输出 | label coverage | 正确标签数 | 原始输出字符数（min / median / max） |
 |---:|---:|---:|---:|---:|---:|
-| 8  | 192 | 0 | 0 | 0.0% | 25 / 26 / 28（截断前缀） |
-| 32 | 192 | 0 | 0 | 0.0% | 123 / 132 / 148 |
-| 64 | 192 | 0 | 0 | 0.0% | 231 / 243 / 299 |
+| 8  | 192 | 0 | 0.0% | 0 | 25 / 26 / 28（截断前缀） |
+| 32 | 192 | 0 | 0.0% | 0 | 123 / 132 / 148 |
+| 64 | 192 | 0 | 0.0% | 0 | 231 / 243 / 299 |
+
+这里的“正确标签数”仅统计输出中出现可解析标签且与 ground truth 相同的条目；三组的二分类准确率都不定义，因为 coverage 为 0%。
 
 32-token 结果见 [predictions_nt32.csv](./predictions_nt32.csv) 和 [output_nt32_summary.json](./output_nt32_summary.json)，64-token 结果见 [predictions_nt64.csv](./predictions_nt64.csv) 和 [output_nt64_summary.json](./output_nt64_summary.json)；对比表见 [output_budget_comparison.csv](./output_budget_comparison.csv)。较长预算只让模型继续生成重复、语义不稳定的文本（例如反复出现 `of a question`、`of a list`），没有出现一个可解析的独立 `HAPPY` 或 `SAD`。因此第一轮的 0% 不能归因于 8-token 截断，但结论仍限定在这个冻结 checkpoint、这个 prompt 和自由生成解码设置；它不是对模型能力的因果证明。
+
+对每个 matched pair 直接比较 happy 与 sad 的原始文本是否完全相同，结果见 [output_sensitivity.csv](./output_sensitivity.csv)、[output_sensitivity_pairs.csv](./output_sensitivity_pairs.csv) 和 [output_sensitivity_summary.json](./output_sensitivity_summary.json)：
+
+| 生成预算 | 完全相同 | 发生变化 | output sensitivity |
+|---:|---:|---:|---:|
+| 8  | 93/96 | 3/96 | 3.125% |
+| 32 | 23/96 | 73/96 | 76.042% |
+| 64 | 16/96 | 80/96 | 83.333% |
+
+在原始 8-token 设置中，statement 01 的 96 条输出只有 1 个模板，statement 02 有 2 个模板且众数占 94.8%；这支持“短输出主要被 statement 模板控制”的行为描述。32/64-token 下，少量早期 token 差异会被自回归续写放大，所以 pair sensitivity 上升不能单独解释为 emotion 被使用。
 
 后面的隐藏态结果仍然可以判断 emotion 信息是否存在。
 
@@ -88,7 +100,29 @@ Answer only HAPPY or SAD.
 | LLM decision state | embedding 0.000 | layer 0 0.099 | layer 23 0.007 |
 | LLM prompt-last control | 0.000 | 0.000 | 0.000 |
 
-没有观察到预期的 `PS` 随深度升高的轨迹。这个设置下，跨 lexical content 的 `sad - happy` 方向从 Whisper 早期层开始下降，经过 final/projector 后维持在约 0.1，LLM audio mean 的末层进一步下降到约 0.052。
+没有观察到预期的 global `PS` 随深度升高的轨迹。这个 global 指标混合了 actor、statement 和 repetition；具体的 factor-controlled 比较见下一节。
+
+### Factor-controlled parallelism
+
+`PS_all` 把 actor、statement 和 repetition 同时放进同一个两两比较集合，因而不能单独归因于 lexical content。基于同一份 `representations.pt`，新增三种控制比较：
+
+$$
+PS_{\rm text}=\mathbb E_{a,r}[\cos(\Delta_{a,01,r},\Delta_{a,02,r})]
+$$
+
+固定 actor 和 repetition，只改变 statement；共有 48 个比较。`PS_speaker` 固定 statement 和 repetition，在 actor 之间比较；4 个 statement×repetition context 内共有 $4\binom{24}{2}=1104$ 个 actor 对。另加 `PS_repetition`，固定 actor 和 statement，只比较两个 repetition，共 48 个比较。由于 cosine 对称，conditioned CSV 的 `comparisons` 使用 unordered pairs，均值与 ordered off-diagonal 定义相同。
+
+完整数据见 [parallelism_conditioned.csv](./parallelism_conditioned.csv)，曲线见 [parallelism_conditioned.png](./parallelism_conditioned.png)。下表给出同一表示位置的 `PS_all / PS_text / PS_speaker / PS_repetition`：
+
+| 表示位置 | PS_all | PS_text | PS_speaker | PS_repetition |
+|---|---:|---:|---:|---:|
+| Whisper conv2 | 0.716 | 0.853 | 0.711 | 0.815 |
+| Whisper final | 0.155 | 0.377 | 0.143 | 0.473 |
+| Projector mean | 0.114 | 0.208 | 0.102 | 0.438 |
+| LLM audio mean final | 0.052 | 0.184 | 0.047 | 0.322 |
+| LLM decision final | 0.007 | 0.019 | 0.008 | 0.150 |
+
+控制 actor 和 repetition 后，`PS_text` 确实高于对应的 `PS_all`；但它仍没有随模型深度稳定升高。`PS_speaker` 在多数位置接近或低于 global 值，而 `PS_repetition` 在 projector/LLM 表示中更高。这个分解说明 global 低分不能写成“主要由 lexical content 导致”，更合适的结论是 emotion 差向量同时受到 speaker、statement 和 repetition 条件影响。
 
 ### Emotion linear probe
 
@@ -102,14 +136,34 @@ speaker-held-out 固定将 actor 19–24 作为测试集；statement-held-out �
 | LLM decision state | 0.833（layer 7） | 0.693（layer 0） | 0.771 / 0.516 |
 | LLM prompt-last control | 0.500 | 0.500 | 0.500 / 0.500 |
 
+## 阶段四：forced-choice likelihood
+
+为避免依赖模型主动遵循输出格式，对每条音频直接计算候选标签的 teacher-forced sequence likelihood：
+
+$$
+S(x)=\log P(\text{happy}\mid x,p)-\log P(\text{sad}\mid x,p)
+$$
+
+多 token verbalizer 对所有 token 的 log probability 求和；`S(x)>0` 判为 happy，`S(x)<0` 判为 sad。默认执行 2×2 的 prompt/verbalizer 矩阵，结果见 [forced_choice_summary.csv](./forced_choice_summary.csv)、[forced_choice_summary.json](./forced_choice_summary.json)，逐 pair margin 见 [forced_choice_pair_margins.csv](./forced_choice_pair_margins.csv)。
+
+| 条件 | verbalizer token 数（happy / sad） | forced-choice accuracy | ROC-AUC | `S(happy)-S(sad)>0` | pair margin mean | 全部预测 |
+|---|---:|---:|---:|---:|---:|---|
+| upper prompt + upper spaced | 2 / 2 | 50.0% | 0.486 | 47/96 (48.96%) | -0.0051 | happy |
+| upper prompt + lower spaced | 1 / 1 | 50.0% | 0.521 | 47/96 (48.96%) | 0.0326 | sad |
+| lower prompt + upper spaced | 2 / 2 | 50.0% | 0.500 | 44/96 (45.83%) | 0.0163 | happy |
+| lower prompt + lower spaced | 1 / 1 | 50.0% | 0.524 | 48/96 (50.00%) | 0.0414 | sad |
+
+四个条件的 ROC-AUC 都接近机会水平，且每个条件对 192 条样本都输出同一个标签；50% accuracy 只是 balanced 数据上的先验偏置。matched-pair margin 也没有稳定地偏向正确方向，因此在当前输入重建和 checkpoint 下，forced-choice likelihood 没有显示可用的 emotion-to-decision 分离。
+
 ## 当前结论
 
 1. **信息可读出。** Emotion 在 Whisper 后段、projector 以及 LLM audio-token mean 中都能被线性 probe 读出；projector 在本轮两个 split 上分别达到 95.8% 和 91.1%。
-2. **没有形成高 parallelism 的跨文本方向。** PS 没有从早期 audio 到 projector/LLM 持续升高，而是从 0.716 降到约 0.1 或更低。因此本轮证据更接近“emotion 可解码，但 `sad-happy` 全局差向量没有被组织成 context-invariant 方向”。
+2. **global PS 不能单独归因于 lexical content。** 控制 actor 和 repetition 后，`PS_text` 高于 `PS_all`，但仍没有形成随深度上升的稳定轨迹；`PS_speaker` 与 `PS_repetition` 表明 speaker 和 repetition 也会改变差向量方向。当前更稳妥的表述是 emotion 差向量具有明显的 context dependence。
 3. **决策位置仍带有部分信息，但不稳定。** `llm_decision` 的 probe 高于随机基线，statement-held-out 末层则接近 0.5；它没有表现出强的跨 context parallelism。
-4. **最终文本输出没有使用这些信息。** 在 `max_new_tokens=8/32/64` 三个预算下，192 条生成结果都没有给出可解析的 HAPPY/SAD 标签；增加生成长度只产生更长的重复文本，没有改变 0/192 的结果。在“可读出 + 输出不使用”的意义上，这个 checkpoint/任务设置表现为 information available at internal states but not converted into the requested output。
+4. **free generation 没有完成标签任务。** 在 `max_new_tokens=8/32/64` 三个预算下，192 条生成结果都没有给出可解析的 HAPPY/SAD 标签；这对应的是 label compliance/coverage=0%，不是一个有定义的二分类 accuracy。原始 8-token 中 93/96 个 pair 的文本完全相同，长预算下差异增多但仍是重复续写。
+5. **forced-choice 也没有显示可用的情绪决策信号。** 对每条音频计算候选序列的 teacher-forced log-likelihood，并用 $S(x)=\log P(\text{happy}\mid x,p)-\log P(\text{sad}\mid x,p)$ 决策。4 个 prompt/verbalizer 条件的 accuracy 都是 50.0%，ROC-AUC 为 0.486–0.524，matched-pair 的 `S(happy)-S(sad)` 正方向比例为 0.458–0.500；结果见 [forced_choice_summary.csv](./forced_choice_summary.csv)、[forced_choice_summary.json](./forced_choice_summary.json) 和 [forced_choice_pair_margins.csv](./forced_choice_pair_margins.csv)。这说明当前设置下 final likelihood readout 没有把内部可读出的 emotion 分离成稳定的 happy/sad 选择。
 
-这是一轮冻结、二分类、固定 intensity 的诊断，不构成因果证明。RAVDESS 的 actor/acoustic 属性仍可能和 emotion 混杂；本轮 audio encoder 使用固定 30 秒 Whisper 输入并做全时间 mean pooling，也可能削弱 token-level 的情绪方向。下一轮若继续，应先做有效音频边界/token-level pooling 和按 actor 的多折 held-out，再考虑任何模型改动或训练。
+这是一轮冻结、二分类、固定 intensity 的诊断，不构成因果证明。上述 forced-choice 结果只说明当前 checkpoint、手工重建配置、prompt/verbalizer 和自由音频输入下没有超过机会水平，不能写成“decoder 已被证明完全不使用 emotion”；instruction-following 能力不足或 checkpoint/config 加载问题仍需单独排除。RAVDESS 的 actor/acoustic 属性也可能和 emotion 混杂；本轮 audio encoder 使用固定 30 秒 Whisper 输入并做全时间 mean pooling，也可能削弱 token-level 的情绪方向。下一轮应先验证官方 checkpoint/config 加载和 text-only likelihood 校准，再做有效音频边界/token-level pooling 与按 actor 的多折 held-out。
 
 ## 可复现实验入口
 
@@ -118,5 +172,9 @@ speaker-held-out 固定将 actor 19–24 作为测试集；statement-held-out �
 - [build_ravdess_manifest.py](../../scripts/build_ravdess_manifest.py)
 - [slam_omni_diagnostics.py](../../scripts/slam_omni_diagnostics.py)
 - [analyze_slam_omni_diagnostics.py](../../scripts/analyze_slam_omni_diagnostics.py)
+- [analyze_output_behavior.py](../../scripts/analyze_output_behavior.py)
+- [analyze_forced_choice.py](../../scripts/analyze_forced_choice.py)
+
+forced-choice 运行阶段为 `slam_omni_diagnostics.py forced-choice`，默认执行 2×2 prompt/verbalizer 矩阵；候选标签按完整 token sequence 做 teacher-forced likelihood，不能用单 token argmax 替代。
 
 远端依赖代码使用官方 SLAM-LLM checkout `/data2/yb/paper/SLAM-LLM`；模型 checkpoint 仍在 `/data2/yb/paper/SLAM-Omni-0.5B/model.pt`，不纳入 Git。模型 SHA-256 为 `601055c1d7022f076a29f1c22693aa6038083631f54e51204f3099a4ec37249e`。

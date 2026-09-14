@@ -6,10 +6,15 @@ from pathlib import Path
 import numpy as np
 
 from scripts.analyze_output_behavior import summarize_prediction_file
+from scripts.analyze_forced_choice import _roc_auc
 from scripts.analyze_slam_omni_diagnostics import _conditioned_parallelism
 
 
 class DiagnosticMetricTests(unittest.TestCase):
+    def test_roc_auc_uses_pairwise_tie_handling(self) -> None:
+        self.assertAlmostEqual(_roc_auc([1, 0], [0.9, 0.1]), 1.0)
+        self.assertAlmostEqual(_roc_auc([1, 0], [0.5, 0.5]), 0.5)
+
     def test_conditioned_parallelism_controls_the_requested_factors(self) -> None:
         specs = [
             ("pair_00", "01", "01", np.array([1.0, 0.0])),

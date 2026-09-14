@@ -89,6 +89,27 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         writer.writerows(rows)
 
 
+def _summary_csv_row(summary: dict[str, Any]) -> dict[str, Any]:
+    row = {
+        key: summary[key]
+        for key in (
+            "condition",
+            "source",
+            "n_rows",
+            "n_pairs",
+            "same_output_pairs",
+            "changed_output_pairs",
+            "output_sensitivity",
+        )
+    }
+    for statement in ("01", "02"):
+        stats = summary["statement_stats"][statement]
+        row[f"statement_{statement}_unique_outputs"] = stats["unique_outputs"]
+        row[f"statement_{statement}_mode_fraction"] = stats["mode_fraction"]
+    row["changed_pair_ids"] = ";".join(summary["changed_pair_ids"])
+    return row
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -114,7 +135,7 @@ def main() -> None:
         summaries.append(summary)
         pair_rows.extend(pairs)
 
-    _write_csv(args.output_dir / "output_sensitivity.csv", summaries)
+    _write_csv(args.output_dir / "output_sensitivity.csv", [_summary_csv_row(summary) for summary in summaries])
     _write_csv(args.output_dir / "output_sensitivity_pairs.csv", pair_rows)
     (args.output_dir / "output_sensitivity_summary.json").write_text(json.dumps({"conditions": summaries}, indent=2, ensure_ascii=False) + "\n")
 
