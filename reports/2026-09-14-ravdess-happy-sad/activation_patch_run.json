@@ -1,0 +1,404 @@
+{
+  "source_remote": "/data2/yb/audio_llm_runs/ravdess_happy_sad_intensity01_grid_deterministic",
+  "manifest": "artifacts/ravdess_happy_sad_intensity01.csv",
+  "condition_id": "upper_prompt__upper_spaced",
+  "happy_verbalizer": " HAPPY",
+  "sad_verbalizer": " SAD",
+  "n_conditions": 12,
+  "n_layers": 6,
+  "n_pairs": 96,
+  "n_raw_rows": 1152,
+  "layer_indices": [
+    7,
+    14,
+    15,
+    17,
+    22,
+    23
+  ],
+  "patch_kinds": [
+    "audio_tokens",
+    "decision_token"
+  ],
+  "patch_site": "post_decoder_block_output",
+  "audio_start": 29,
+  "audio_length": 300,
+  "decision_position": 330,
+  "prefix_length": 331,
+  "batch_size": 1,
+  "seed": 1234,
+  "device": "CUDA_VISIBLE_DEVICES=6, torch device cuda:0",
+  "model_parameters_frozen": true,
+  "self_patch_max_abs_likelihood_error": 1.52587890625e-05,
+  "all_rows_error_empty": true,
+  "baseline_max_abs_diff_across_conditions": 0.0,
+  "per_condition": [
+    {
+      "manifest": "artifacts/ravdess_happy_sad_intensity01.csv",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "condition_id": "upper_prompt__upper_spaced",
+      "happy_token_ids": [
+        86777,
+        56
+      ],
+      "sad_token_ids": [
+        328,
+        1808
+      ],
+      "layer_indices": [
+        14
+      ],
+      "patch_kinds": [
+        "audio_tokens"
+      ],
+      "patch_site": "post_decoder_block_output",
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+      "model_parameters_frozen": true,
+      "self_patch_max_abs_likelihood_error": 1.1444091796875e-05,
+      "self_patch_tolerance": 0.001,
+      "seed": 1234
+    },
+    {
+      "manifest": "artifacts/ravdess_happy_sad_intensity01.csv",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "condition_id": "upper_prompt__upper_spaced",
+      "happy_token_ids": [
+        86777,
+        56
+      ],
+      "sad_token_ids": [
+        328,
+        1808
+      ],
+      "layer_indices": [
+        14
+      ],
+      "patch_kinds": [
+        "decision_token"
+      ],
+      "patch_site": "post_decoder_block_output",
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+      "model_parameters_frozen": true,
+      "self_patch_max_abs_likelihood_error": 7.62939453125e-06,
+      "self_patch_tolerance": 0.001,
+      "seed": 1234
+    },
+    {
+      "manifest": "artifacts/ravdess_happy_sad_intensity01.csv",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "condition_id": "upper_prompt__upper_spaced",
+      "happy_token_ids": [
+        86777,
+        56
+      ],
+      "sad_token_ids": [
+        328,
+        1808
+      ],
+      "layer_indices": [
+        15
+      ],
+      "patch_kinds": [
+        "audio_tokens"
+      ],
+      "patch_site": "post_decoder_block_output",
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+      "model_parameters_frozen": true,
+      "self_patch_max_abs_likelihood_error": 1.52587890625e-05,
+      "self_patch_tolerance": 0.001,
+      "seed": 1234
+    },
+    {
+      "manifest": "artifacts/ravdess_happy_sad_intensity01.csv",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "condition_id": "upper_prompt__upper_spaced",
+      "happy_token_ids": [
+        86777,
+        56
+      ],
+      "sad_token_ids": [
+        328,
+        1808
+      ],
+      "layer_indices": [
+        15
+      ],
+      "patch_kinds": [
+        "decision_token"
+      ],
+      "patch_site": "post_decoder_block_output",
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+      "model_parameters_frozen": true,
+      "self_patch_max_abs_likelihood_error": 1.1444091796875e-05,
+      "self_patch_tolerance": 0.001,
+      "seed": 1234
+    },
+    {
+      "manifest": "artifacts/ravdess_happy_sad_intensity01.csv",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "condition_id": "upper_prompt__upper_spaced",
+      "happy_token_ids": [
+        86777,
+        56
+      ],
+      "sad_token_ids": [
+        328,
+        1808
+      ],
+      "layer_indices": [
+        17
+      ],
+      "patch_kinds": [
+        "audio_tokens"
+      ],
+      "patch_site": "post_decoder_block_output",
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+      "model_parameters_frozen": true,
+      "self_patch_max_abs_likelihood_error": 1.1444091796875e-05,
+      "self_patch_tolerance": 0.001,
+      "seed": 1234
+    },
+    {
+      "manifest": "artifacts/ravdess_happy_sad_intensity01.csv",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "condition_id": "upper_prompt__upper_spaced",
+      "happy_token_ids": [
+        86777,
+        56
+      ],
+      "sad_token_ids": [
+        328,
+        1808
+      ],
+      "layer_indices": [
+        17
+      ],
+      "patch_kinds": [
+        "decision_token"
+      ],
+      "patch_site": "post_decoder_block_output",
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+      "model_parameters_frozen": true,
+      "self_patch_max_abs_likelihood_error": 7.62939453125e-06,
+      "self_patch_tolerance": 0.001,
+      "seed": 1234
+    },
+    {
+      "manifest": "artifacts/ravdess_happy_sad_intensity01.csv",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "condition_id": "upper_prompt__upper_spaced",
+      "happy_token_ids": [
+        86777,
+        56
+      ],
+      "sad_token_ids": [
+        328,
+        1808
+      ],
+      "layer_indices": [
+        22
+      ],
+      "patch_kinds": [
+        "audio_tokens"
+      ],
+      "patch_site": "post_decoder_block_output",
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+      "model_parameters_frozen": true,
+      "self_patch_max_abs_likelihood_error": 3.814697265625e-06,
+      "self_patch_tolerance": 0.001,
+      "seed": 1234
+    },
+    {
+      "manifest": "artifacts/ravdess_happy_sad_intensity01.csv",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "condition_id": "upper_prompt__upper_spaced",
+      "happy_token_ids": [
+        86777,
+        56
+      ],
+      "sad_token_ids": [
+        328,
+        1808
+      ],
+      "layer_indices": [
+        22
+      ],
+      "patch_kinds": [
+        "decision_token"
+      ],
+      "patch_site": "post_decoder_block_output",
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+      "model_parameters_frozen": true,
+      "self_patch_max_abs_likelihood_error": 7.62939453125e-06,
+      "self_patch_tolerance": 0.001,
+      "seed": 1234
+    },
+    {
+      "manifest": "artifacts/ravdess_happy_sad_intensity01.csv",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "condition_id": "upper_prompt__upper_spaced",
+      "happy_token_ids": [
+        86777,
+        56
+      ],
+      "sad_token_ids": [
+        328,
+        1808
+      ],
+      "layer_indices": [
+        23
+      ],
+      "patch_kinds": [
+        "audio_tokens"
+      ],
+      "patch_site": "post_decoder_block_output",
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+      "model_parameters_frozen": true,
+      "self_patch_max_abs_likelihood_error": 0.0,
+      "self_patch_tolerance": 0.001,
+      "seed": 1234
+    },
+    {
+      "manifest": "artifacts/ravdess_happy_sad_intensity01.csv",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "condition_id": "upper_prompt__upper_spaced",
+      "happy_token_ids": [
+        86777,
+        56
+      ],
+      "sad_token_ids": [
+        328,
+        1808
+      ],
+      "layer_indices": [
+        23
+      ],
+      "patch_kinds": [
+        "decision_token"
+      ],
+      "patch_site": "post_decoder_block_output",
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+      "model_parameters_frozen": true,
+      "self_patch_max_abs_likelihood_error": 0.0,
+      "self_patch_tolerance": 0.001,
+      "seed": 1234
+    },
+    {
+      "manifest": "artifacts/ravdess_happy_sad_intensity01.csv",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "condition_id": "upper_prompt__upper_spaced",
+      "happy_token_ids": [
+        86777,
+        56
+      ],
+      "sad_token_ids": [
+        328,
+        1808
+      ],
+      "layer_indices": [
+        7
+      ],
+      "patch_kinds": [
+        "audio_tokens"
+      ],
+      "patch_site": "post_decoder_block_output",
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+      "model_parameters_frozen": true,
+      "self_patch_max_abs_likelihood_error": 1.1444091796875e-05,
+      "self_patch_tolerance": 0.001,
+      "seed": 1234
+    },
+    {
+      "manifest": "artifacts/ravdess_happy_sad_intensity01.csv",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "condition_id": "upper_prompt__upper_spaced",
+      "happy_token_ids": [
+        86777,
+        56
+      ],
+      "sad_token_ids": [
+        328,
+        1808
+      ],
+      "layer_indices": [
+        7
+      ],
+      "patch_kinds": [
+        "decision_token"
+      ],
+      "patch_site": "post_decoder_block_output",
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+      "model_parameters_frozen": true,
+      "self_patch_max_abs_likelihood_error": 7.62939453125e-06,
+      "self_patch_tolerance": 0.001,
+      "seed": 1234
+    }
+  ],
+  "all_self_patch_controls_within_tolerance": true,
+  "all_subruns_completed": true,
+  "exit_codes": {
+    "activation_patch_layer14_audio_tokens": 0,
+    "activation_patch_layer14_decision_token": 0,
+    "activation_patch_layer15_audio_tokens": 0,
+    "activation_patch_layer15_decision_token": 0,
+    "activation_patch_layer17_audio_tokens": 0,
+    "activation_patch_layer17_decision_token": 0,
+    "activation_patch_layer22_audio_tokens": 0,
+    "activation_patch_layer22_decision_token": 0,
+    "activation_patch_layer23_audio_tokens": 0,
+    "activation_patch_layer23_decision_token": 0,
+    "activation_patch_layer7_audio_tokens": 0,
+    "activation_patch_layer7_decision_token": 0
+  },
+  "code_commit": "ce652960ac5d2fc99c2df3871141b0d732c8a58f",
+  "run_completed_at": "2026-09-14T15:09:21Z",
+  "runner_command_split": "one process per layer×patch-kind; CUDA_VISIBLE_DEVICES=6; batch-size=1; seed=1234"
+}

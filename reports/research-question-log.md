@@ -10,6 +10,7 @@
 | **Q3：第二次修正** | 低 global PS 是否主要来自 lexical content？ | 新增 \(PS_{\text{text}}\)、\(PS_{\text{speaker}}\)、\(PS_{\text{repetition}}\)。 | Projector：\(PS_{\rm all}=0.114\)、\(PS_{\rm text}=0.208\)、\(PS_{\rm speaker}=0.102\)、\(PS_{\rm repetition}=0.438\)。 | 低 PS 不能归因于文本；speaker、statement、repetition 都会改变 emotion direction，speaker 影响尤其明显。 | Emotion 更像 context/speaker-conditioned code，而不是全局向量。 |
 | **Q4：利用问题** | 即使外部线性头能读出，模型自己的 likelihood readout 能不能使用？ | 2×2 prompt/verbalizer forced-choice sequence likelihood；free-generation sensitivity。 | 四个条件 accuracy 都是 50%；ROC-AUC 0.486–0.524；每个条件都退化为同一标签偏置。 | 证明当前模型 readout 没有形成可用 happy/sad likelihood separation；但仍未定位具体失败机制。 | 问信息在哪一步失去 decision relevance。 |
 | **Q5：当前问题** | 跨文本可读但 context-conditioned 的语气信息，为什么没有成为最终决策依据？ | 待做：audio-token 与 decision-token 对照、联合 speaker+statement held-out、activation/value patching、forced-choice causal intervention。 | 现有线索：audio-token mean 中可读性高，decision state 的跨 statement probe 后期接近 chance；模型 likelihood 也是 chance。 | 可能不是“表示不存在”，而是 audio representation 没有成功 routing 到 decision token，或最终 readout 没读取它。 | **Routing failure 还是 readout failure？** |
+| **Q6：activation patching 结果** | 在候选层直接交换 matched-pair 的 audio-token 或 decision-token state，哪一种能把最终 forced-choice margin 推向 donor emotion？ | `layer_7,14,15,17,22,23` × `{audio_tokens, decision_token}`，每格 96 对；固定 `seed=1234`，按双向 $S$ margin 计算 CE。 | 只有 `layer_17/audio_tokens` 的 CE 通过描述性 CI95 下界 >0：+0.061（[+0.020,+0.102]）；同层 decision patch 未通过；`layer_23/audio_tokens` 精确为 0；其余层未达到 CI 下界 >0。 | 局部 audio state 确有干预性影响，但直接 decision-state 替换不稳定，不能把它直接等同于自然 routing 或可用 readout。 | **该 layer-17 效应是自然 audio→decision routing，还是分布式 token computation / off-manifold patch artifact？** |
 
 ## 当前证据索引
 
@@ -17,5 +18,7 @@
 - [factor-controlled parallelism](./2026-09-14-ravdess-happy-sad/parallelism_conditioned.csv)
 - [forced-choice 汇总](./2026-09-14-ravdess-happy-sad/forced_choice_summary.csv)
 - [audio-token → decision-token transfer 诊断](./2026-09-14-ravdess-happy-sad/decision_transfer.csv)
+- [activation patching 汇总](./2026-09-14-ravdess-happy-sad/activation_patch_summary.csv)
+- [activation patching 机制表](./2026-09-14-ravdess-happy-sad/activation_patch_mechanism.csv)
 
-Q5 仍是开放问题。现有 probe gap 只能定位下一轮因果干预的候选层，不能单独证明 routing failure 或 readout failure；需要结合 activation/value patching、audio-token ablation 和 forced-choice margin 的因果变化来区分两者。
+Q5 已通过 forced-choice 和 activation patching 收窄，但仍未完成 routing/readout 的机制判定。当前最具体的 Q6 线索是 layer 17 audio-token patch 的局部正向 CE；需要结合 activation/value tracing、audio-token ablation、更多 prompt/verbalizer 和 held-out actor/statement 复核它是否对应自然的 audio→decision routing。

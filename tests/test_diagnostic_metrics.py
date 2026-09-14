@@ -78,8 +78,8 @@ class DiagnosticMetricTests(unittest.TestCase):
         donor = torch_lib.full((1, 2, 3), 9.0)
         output = (torch_lib.zeros((1, 5, 3)), "aux")
         patched = _patch_hook(donor, "audio_tokens", 1, 2, 4)(None, None, output)
-        self.assertTrue(torch_lib.equal(patched[0][0], torch_lib.zeros(3)))
-        self.assertTrue(torch_lib.equal(patched[0][1:3], donor[0]))
+        self.assertTrue(torch_lib.equal(patched[0][0, 0], torch_lib.zeros(3)))
+        self.assertTrue(torch_lib.equal(patched[0][0, 1:3], donor[0]))
         self.assertEqual(patched[1], "aux")
     def test_decision_transfer_reports_probe_gap_and_layer_step(self) -> None:
         rows = []

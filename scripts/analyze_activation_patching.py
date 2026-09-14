@@ -98,12 +98,12 @@ def summarize_patch_rows(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
 
 def mechanism_label(audio_effective: bool, decision_effective: bool) -> str:
     if audio_effective and decision_effective:
-        return "audio 与 decision patch 都有 donor 方向效应；与 downstream readout 可用、自然 routing/权重不足相一致"
+        return "audio 与 decision patch 的 CE 均为正且 CI95 下界 > 0；与 downstream readout 可用、自然 routing/权重不足相一致"
     if not audio_effective and decision_effective:
-        return "decision patch 有效而 audio patch 无效；与 audio→decision routing failure 相一致"
+        return "decision patch 的 CE CI95 下界 > 0 而 audio patch 未达到；与 audio→decision routing failure 相一致"
     if not audio_effective and not decision_effective:
-        return "两类 patch 都无效；更像 downstream readout/标签映射问题，或 patch state 偏离有效分布"
-    return "audio patch 有效而 decision patch 无效；提示作用可能依赖分布式 token computation，或 decision patch 产生 off-manifold state"
+        return "两类 patch 的 CE 都未达到 CI95 下界 > 0；不能据此区分 downstream readout、标签映射或 patch state 偏离分布"
+    return "audio patch 的 CE CI95 下界 > 0 而 decision patch 未达到；提示作用可能依赖分布式 token computation，或 decision patch 产生 off-manifold state"
 
 
 def build_mechanism_rows(summaries: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -117,8 +117,8 @@ def build_mechanism_rows(summaries: list[dict[str, Any]]) -> list[dict[str, Any]
             continue
         audio = group["audio_tokens"]
         decision = group["decision_token"]
-        audio_effective = float(audio["mean_counterfactual_effect"]) > 0
-        decision_effective = float(decision["mean_counterfactual_effect"]) > 0
+        audio_effective = float(audio["ci95_low_counterfactual_effect"]) > 0
+        decision_effective = float(decision["ci95_low_counterfactual_effect"]) > 0
         rows.append(
             {
                 "layer_index": layer_index,
@@ -129,8 +129,10 @@ def build_mechanism_rows(summaries: list[dict[str, Any]]) -> list[dict[str, Any]
                 "decision_positive_ce_fraction": decision["positive_ce_fraction"],
                 "audio_both_directions_fraction": audio["both_directions_fraction"],
                 "decision_both_directions_fraction": decision["both_directions_fraction"],
-                "audio_effective_by_mean_sign": audio_effective,
-                "decision_effective_by_mean_sign": decision_effective,
+                "audio_effective_by_mean_sign": float(audio["mean_counterfactual_effect"]) > 0,
+                "decision_effective_by_mean_sign": float(decision["mean_counterfactual_effect"]) > 0,
+                "audio_effective_by_ci95": audio_effective,
+                "decision_effective_by_ci95": decision_effective,
                 "interpretation": mechanism_label(audio_effective, decision_effective),
             }
         )
@@ -230,8 +232,8 @@ def main() -> None:
             }
         ),
         "patch_site": "post_decoder_block_output",
-        "effect_definition": "CE=0.5*((baseline_happy-patched_happy_from_sad)+(patched_sad_from_happy-baseline_sad))",
-        "mechanism_rule": "effective iff mean counterfactual effect > 0; sign rule is exploratory",
+        "effect_definition": "CE=0.5*((baseline_happy_margin-patched_happy_target_margin)+(patched_sad_target_margin-baseline_sad_margin))",
+        "mechanism_rule": "effective iff descriptive normal-approximation CI95 lower bound > 0; mean and direction fractions remain reported",
         "ci95_definition": "normal approximation over the 96 pair-level counterfactual effects; descriptive only",
         "interpretation": "Activation patching measures causal counterfactual influence under the selected layer, position, prompt, and verbalizer; it does not by itself establish natural routing.",
         "layers": sorted({row["layer_index"] for row in summaries}),

@@ -178,6 +178,34 @@ $$
 
 四个条件的 ROC-AUC 都接近机会水平，且每个条件对 192 条样本都输出同一个标签；50% accuracy 只是 balanced 数据上的先验偏置。matched-pair margin 也没有稳定地偏向正确方向，因此在当前输入重建和 checkpoint 下，forced-choice likelihood 没有显示可用的 emotion-to-decision 分离。
 
+## 阶段六：matched-pair activation patching
+
+为区分 audio→decision routing 和 downstream readout，本轮对每个严格 matched pair（同 actor、statement、repetition、intensity，仅 emotion 不同）做双向 donor swap。使用 forced-choice 的 `upper_prompt__upper_spaced` 条件（verbalizer 为 ` HAPPY` / ` SAD`，均为 2 个 token）；模型、encoder、projector 和 LLM 全部冻结。
+
+- 在 Qwen decoder 的 `post_decoder_block_output` 上对候选层 `7, 14, 15, 17, 22, 23` 加 hook。
+- `audio_tokens` patch 替换位置 `[29:329)` 的 300 个 audio tokens；`decision_token` patch 替换位置 `330`，prefix 长度为 331。
+- 每个 target 保留 HAPPY 和 SAD 两个候选的完整 teacher-forced sequence log-likelihood，先在同一 target 上构造 $S(x)=\log P(\mathrm{HAPPY}\mid x,p)-\log P(\mathrm{SAD}\mid x,p)$，再计算
+  $\mathrm{CE}_l=\tfrac12[(S(x_H)-S(x_H\leftarrow x_S))+(S(x_S\leftarrow x_H)-S(x_S))]$。
+  因而正 CE 表示两侧 target 的 margin 都向 donor emotion 移动。
+- 为控制长进程资源，12 个 layer×patch-site 条件分成独立进程，统一 `seed=1234`、`batch-size=1`；每个条件覆盖 96 对。固定 seed 后各条件 baseline candidate scores 的最大差异为 0。
+
+原始 1,152 行及汇总见 [activation_patch.csv](./activation_patch.csv)、[activation_patch_summary.csv](./activation_patch_summary.csv)、[activation_patch_mechanism.csv](./activation_patch_mechanism.csv)、[activation_patch_summary.json](./activation_patch_summary.json)、[activation_patch_run.json](./activation_patch_run.json)，图见 [activation_patch_summary.png](./activation_patch_summary.png)。12 个子任务退出码均为 0，`error` 列为空；self-patch 的最大绝对 likelihood 误差为 $1.53\times10^{-5}$（容差 $10^{-3}$）。
+
+表中 CI 是对 96 个 pair-level CE 的描述性正态近似区间；“双向一致”是 happy-side 和 sad-side effect 同时为正的比例：
+
+| LLM layer | audio-token CE（95% CI；双向一致） | decision-token CE（95% CI；双向一致） |
+|---:|---:|---:|
+| `layer_7` | -0.032 [-0.158, +0.093]；42.7% | +0.021 [-0.003, +0.046]；54.2% |
+| `layer_14` | -0.001 [-0.078, +0.076]；52.1% | -0.022 [-0.104, +0.061]；45.8% |
+| `layer_15` | -0.004 [-0.077, +0.068]；52.1% | -0.012 [-0.094, +0.069]；45.8% |
+| `layer_17` | +0.061 [+0.020, +0.102]；59.4% | -0.059 [-0.156, +0.038]；39.6% |
+| `layer_22` | -0.001 [-0.014, +0.013]；38.5% | +0.000 [-0.099, +0.099]；46.9% |
+| `layer_23` | +0.000 [+0.000, +0.000]；0.0% | -0.004 [-0.104, +0.097]；47.9% |
+
+按“CI95 下界 > 0”的描述性标准，只有 `layer_17/audio_tokens` 达到明确正向（CE=+0.061，CI=[+0.020,+0.102]，双向一致 59.4%）；同层 `decision_token` 为 −0.059，CI 跨过 0。`layer_7` 的 decision-token 均值为 +0.021 但 CI 下界略低于 0，不能当作有效 patch；`layer_23` 的 audio-token CE 精确为 0，符合最终 block 后没有 downstream token mixing 的结构控制。其余层的两类 patch 也未达到 CI 下界 > 0。
+
+因此，这一轮没有得到“所有层都存在 routing failure”或“decoder readout 已被证明可用”的结论。最具体的信号是 `layer_17` audio-token state 的 donor-aligned causal influence，而直接替换同层 decision state 没有稳定地产生相同方向；这与分布式 token computation 或 decision patch 的 off-manifold 风险相一致。该解释仍受单一 prompt/verbalizer、固定 30 秒音频边界和描述性 CI 限制，下一步应在更多 verbalizer/seed、audio-token ablation 和 value/activation tracing 上复核。
+
 ## 当前结论
 
 1. **信息可读出。** Emotion 在 Whisper 后段、projector 以及 LLM audio-token mean 中都能被线性 probe 读出；projector 在本轮两个 split 上分别达到 95.8% 和 91.1%。
@@ -187,7 +215,9 @@ $$
 5. **free generation 没有完成标签任务。** 在 `max_new_tokens=8/32/64` 三个预算下，192 条生成结果都没有给出可解析的 HAPPY/SAD 标签；这对应的是 label compliance/coverage=0%，不是一个有定义的二分类 accuracy。原始 8-token 中 93/96 个 pair 的文本完全相同，长预算下差异增多但仍是重复续写。
 6. **forced-choice 也没有显示可用的情绪决策信号。** 对每条音频计算候选序列的 teacher-forced log-likelihood，并用 $S(x)=\log P(\text{happy}\mid x,p)-\log P(\text{sad}\mid x,p)$ 决策。4 个 prompt/verbalizer 条件的 accuracy 都是 50.0%，ROC-AUC 为 0.486–0.524，matched-pair 的 `S(happy)-S(sad)` 正方向比例为 0.458–0.500；结果见 [forced_choice_summary.csv](./forced_choice_summary.csv)、[forced_choice_summary.json](./forced_choice_summary.json) 和 [forced_choice_pair_margins.csv](./forced_choice_pair_margins.csv)。这说明当前设置下 final likelihood readout 没有把内部可读出的 emotion 分离成稳定的 happy/sad 选择。
 
-这是一轮冻结、二分类、固定 intensity 的诊断，不构成因果证明。上述 forced-choice 结果只说明当前 checkpoint、手工重建配置、prompt/verbalizer 和自由音频输入下没有超过机会水平，不能写成“decoder 已被证明完全不使用 emotion”；instruction-following 能力不足或 checkpoint/config 加载问题仍需单独排除。RAVDESS 的 actor/acoustic 属性也可能和 emotion 混杂；本轮 audio encoder 使用固定 30 秒 Whisper 输入并做全时间 mean pooling，也可能削弱 token-level 的情绪方向。下一轮应先验证官方 checkpoint/config 加载和 text-only likelihood 校准，再做有效音频边界/token-level pooling 与按 actor 的多折 held-out。
+7. **activation patching 给出局部因果线索。** 在固定 `upper_prompt__upper_spaced`、seed=1234 的 12 个条件中，只有 `layer_17/audio_tokens` 的 CE 通过描述性 CI95 下界 >0（+0.061，[+0.020,+0.102]）；同层 `decision_token` 未通过，`layer_23/audio_tokens` 精确为 0。结果支持“layer 17 的 audio state 能影响后续 margin，但直接 decision-state 替换不稳定”的局部现象，不能单独证明自然 routing failure 或 downstream readout failure。
+
+这是一轮冻结、二分类、固定 intensity 的诊断。forced-choice 结果只说明当前 checkpoint、手工重建配置、prompt/verbalizer 和自由音频输入下没有超过机会水平，不能写成“decoder 已被证明完全不使用 emotion”；instruction-following 能力不足或 checkpoint/config 加载问题仍需单独排除。activation patching 提供的是给定层、位置和 verbalizer 下的干预性因果效应，不等同于自然 routing 已被证明。RAVDESS 的 actor/acoustic 属性也可能和 emotion 混杂；本轮 audio encoder 使用固定 30 秒 Whisper 输入并做全时间 mean pooling，也可能削弱 token-level 的情绪方向。下一轮应先验证官方 checkpoint/config 加载和 text-only likelihood 校准，再做有效音频边界/token-level pooling 与按 actor 的多折 held-out。
 
 ## 可复现实验入口
 
@@ -199,8 +229,27 @@ $$
 - [analyze_output_behavior.py](../../scripts/analyze_output_behavior.py)
 - [analyze_forced_choice.py](../../scripts/analyze_forced_choice.py)
 - [analyze_decision_transfer.py](../../scripts/analyze_decision_transfer.py)
+- [run_activation_patching.py](../../scripts/run_activation_patching.py)
+- [analyze_activation_patching.py](../../scripts/analyze_activation_patching.py)
 
-forced-choice 运行阶段为 `slam_omni_diagnostics.py forced-choice`，默认执行 2×2 prompt/verbalizer 矩阵；候选标签按完整 token sequence 做 teacher-forced likelihood，不能用单 token argmax 替代。
+forced-choice 运行阶段为 `slam_omni_diagnostics.py forced-choice`，默认执行 2×2 prompt/verbalizer 矩阵；候选标签按完整 token sequence 做 teacher-forced likelihood，不能用单 token argmax 替代。activation patching 的单条件入口如下（完整网格按 layer×patch-kind 拆分执行）：
+
+```bash
+python scripts/run_activation_patching.py \
+  --manifest artifacts/ravdess_happy_sad_intensity01.csv \
+  --ravdess-root /data2/yb/paper/RAVDESS \
+  --slam-llm-root /data2/yb/paper/SLAM-LLM \
+  --qwen-path /data2/yb/paper_runtime_models/Qwen2-0.5B \
+  --whisper-path /data2/yb/paper_runtime_models/whisper/small.pt \
+  --checkpoint /data2/yb/paper/SLAM-Omni-0.5B/model.pt \
+  --output-csv /tmp/activation_patch_layer17_audio_tokens.csv \
+  --condition upper_prompt__upper_spaced --layer 17 \
+  --patch-kind audio_tokens --batch-size 1 --seed 1234 --device cuda:0
+
+python scripts/analyze_activation_patching.py \
+  --input-csv reports/2026-09-14-ravdess-happy-sad/activation_patch.csv \
+  --output-dir reports/2026-09-14-ravdess-happy-sad
+```
 
 probe transfer 汇总命令为：
 

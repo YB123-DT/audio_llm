@@ -12,6 +12,8 @@
 已下载并在冻结条件下完成第一轮 RAVDESS happy/sad 诊断的 SLAM-Omni 官方英语单轮检查点（Qwen2-0.5B + Whisper-small，group size 3）。
 详见 [下载与校验报告](reports/2026-09-14-slam-omni-download.md) 和 [RAVDESS 诊断报告](reports/2026-09-14-ravdess-happy-sad/diagnostic-report.md)。
 
+当前冻结诊断还包括 matched-pair activation patching；原始交换分数、机制汇总和运行元数据见 [activation patching 结果](reports/2026-09-14-ravdess-happy-sad/activation_patch_summary.csv)。
+
 ## 工作约定
 
 后续本项目代码、诊断报告和实验摘要在此仓库维护，每项工作完成验证后提交并推送。
