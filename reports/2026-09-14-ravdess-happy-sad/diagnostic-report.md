@@ -152,12 +152,12 @@ $$
 
 结果见 [decision_transfer.csv](./decision_transfer.csv)、[decision_transfer_summary.json](./decision_transfer_summary.json) 和 [decision_transfer.png](./decision_transfer.png)。候选位置如下（仅搜索 `layer_0`–`layer_23`）：
 
-| held-out split | decision probe 最大单层下降 | 该点的 audio probe | LLM 层内最大 audio−decision gap | 该点 audio / decision / 保留率 |
+| held-out split | decision probe 最大单层下降 | 突降点 audio probe | LLM 层内最大 audio−decision gap | gap 点 audio / decision / 保留率 |
 |---|---|---:|---|---|
 | speaker | `layer_13 → layer_14`: 0.7708 → 0.6458（−0.1250） | 0.9167 | `layer_15` | 0.9167 / 0.6042 / 0.250 |
 | statement | `layer_21 → layer_22`: 0.5781 → 0.5156（−0.0625） | 0.8281 | `layer_17` | 0.8333 / 0.5156 / 0.047 |
 
-因此，speaker-held-out 上最符合“audio probe 仍高、decision probe 突降”的候选区域是 `layer_14`，而最大累计 gap 出现在 `layer_15`；statement-held-out 的最大 gap 在 `layer_17`，末段 `layer_22` 还有一次较小突降。由于每个 held-out 测试集只有 48 条样本、准确率步长较粗，这些层只能作为下一轮因果干预的候选点。该分析比较的是两个位置上独立训练的线性 readout，属于 probe-retention 代理，不能证明单一层完成了因果的信息传递或删除。
+因此，speaker-held-out 上最符合“audio probe 仍高、decision probe 突降”的候选区域是 `layer_14`，而最大层内 gap 出现在 `layer_15`；statement-held-out 的最大 gap 在 `layer_17`，末段 `layer_22` 还有一次较小突降。由于每个 held-out 测试集只有 48 条样本、准确率步长较粗，这些层只能作为下一轮因果干预的候选点。该分析比较的是两个位置上独立训练的线性 readout，属于 probe-retention 代理，不能证明单一层完成了因果的信息传递或删除。
 
 ## 阶段五：forced-choice likelihood
 
