@@ -1,0 +1,33 @@
+# Credentials and local environments
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.venv/
+venv/
+__pycache__/
+*.pyc
+.cache/
+.omx/
+# Large model and dataset assets
+models/
+checkpoints/
+data/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+*.onnx
+*.npy
+*.npz
+*.parquet
+*.arrow
+*.zip
+*.tar
+*.tar.gz
+*.part
+# Keep curated reports; omit raw runtime logs
+logs/
+*.log
