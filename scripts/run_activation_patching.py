@@ -415,6 +415,50 @@ def _score_direction(
     return happy_scores, sad_scores
 
 
+def _self_patch_check(
+    torch: Any,
+    model: Any,
+    prefixes: list[Any],
+    positions: dict[str, int],
+    donor_store: dict[int, dict[str, Any]],
+    layer_indices: tuple[int, ...],
+    patch_kinds: tuple[str, ...],
+    happy_ids: list[int],
+    sad_ids: list[int],
+    baseline_happy: np.ndarray,
+    baseline_sad: np.ndarray,
+    device: Any,
+) -> float:
+    """Check that replacing a state with itself preserves the likelihood."""
+    layers = _llm_layers(model)
+    prefix_batch = torch.stack([prefixes[0]]).to(device)
+    attention_mask = torch.ones((1, prefix_batch.shape[1]), dtype=torch.bool, device=device)
+    max_error = 0.0
+    for layer_index in layer_indices:
+        for patch_kind in patch_kinds:
+            happy, sad = _score_candidate_pairs(
+                torch,
+                model,
+                prefix_batch,
+                attention_mask,
+                happy_ids,
+                sad_ids,
+                positions["prefix_length"],
+                layer_module=layers[layer_index],
+                donor=donor_store[layer_index][patch_kind][:1].to(device),
+                patch_kind=patch_kind,
+                audio_start=positions["audio_start"],
+                audio_length=positions["audio_length"],
+                decision_position=positions["decision_position"],
+            )
+            max_error = max(
+                max_error,
+                abs(float(happy[0]) - float(baseline_happy[0])),
+                abs(float(sad[0]) - float(baseline_sad[0])),
+            )
+    return max_error
+
+
 def _pair_indices(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
     grouped: dict[str, dict[str, int]] = {}
     for index, row in enumerate(rows):
@@ -493,6 +537,26 @@ def run(args: argparse.Namespace) -> None:
         device,
         args.batch_size,
     )
+    self_patch_error = _self_patch_check(
+        torch,
+        model,
+        prefixes,
+        positions,
+        donor_store,
+        layer_indices,
+        patch_kinds,
+        happy_ids,
+        sad_ids,
+        happy_baseline,
+        sad_baseline,
+        device,
+    )
+    LOGGER.info("self-patch max absolute likelihood error: %.6g", self_patch_error)
+    if self_patch_error > args.self_patch_tolerance:
+        raise RuntimeError(
+            f"Self-patch control changed likelihood by {self_patch_error:.6g}, "
+            f"exceeding tolerance {args.self_patch_tolerance:.6g}"
+        )
     output_path = args.output_csv
     output_path.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = [
@@ -616,6 +680,8 @@ def run(args: argparse.Namespace) -> None:
         "prefix_length": positions["prefix_length"],
         "checkpoint": str(args.checkpoint),
         "model_parameters_frozen": True,
+        "self_patch_max_abs_likelihood_error": self_patch_error,
+        "self_patch_tolerance": args.self_patch_tolerance,
     }
     output_path.with_name(output_path.stem + "_run.json").write_text(
         json.dumps(run_metadata, indent=2, ensure_ascii=False) + "\n"
@@ -636,6 +702,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--layer", nargs="+", type=int, default=list(DEFAULT_LAYERS))
     parser.add_argument("--patch-kind", nargs="+", choices=list(PATCH_KINDS), default=list(PATCH_KINDS))
     parser.add_argument("--batch-size", type=int, default=8)
+    parser.add_argument("--self-patch-tolerance", type=float, default=1e-3)
     parser.add_argument("--limit", type=int)
     parser.add_argument("--start", type=int, default=0)
     parser.add_argument("--device", default=None)
@@ -648,6 +715,8 @@ def main() -> None:
     args = parse_args()
     if args.batch_size < 1:
         raise SystemExit("--batch-size must be positive")
+    if args.self_patch_tolerance < 0:
+        raise SystemExit("--self-patch-tolerance must be non-negative")
     run(args)
 
 
