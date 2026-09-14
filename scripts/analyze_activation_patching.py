@@ -196,7 +196,7 @@ def _write_plot(output_dir: Path, summaries: list[dict[str, Any]], mechanism_row
     axes[1, 1].text(
         0.02,
         0.98,
-        "Interpretation is sign-based and exploratory.\n"
+        "CI-based mechanism labels are descriptive.\n"
         "Positive CE means the target margin moves toward\n"
         "the donor emotion in both swap directions.",
         va="top",
