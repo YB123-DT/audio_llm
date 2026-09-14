@@ -47,6 +47,7 @@ except ModuleNotFoundError:  # Direct ``python scripts/run_activation_patching.p
 LOGGER = logging.getLogger("run_activation_patching")
 DEFAULT_LAYERS = (7, 14, 15, 17, 22, 23)
 PATCH_KINDS = ("audio_tokens", "decision_token")
+DEFAULT_SEED = 1234
 
 
 def _llm_layers(model: Any) -> Any:
@@ -756,6 +757,7 @@ def run(args: argparse.Namespace) -> None:
         "model_parameters_frozen": True,
         "self_patch_max_abs_likelihood_error": self_patch_error,
         "self_patch_tolerance": args.self_patch_tolerance,
+        "seed": args.seed,
     }
     output_path.with_name(output_path.stem + "_run.json").write_text(
         json.dumps(run_metadata, indent=2, ensure_ascii=False) + "\n"
@@ -776,6 +778,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--layer", nargs="+", type=int, default=list(DEFAULT_LAYERS))
     parser.add_argument("--patch-kind", nargs="+", choices=list(PATCH_KINDS), default=list(PATCH_KINDS))
     parser.add_argument("--batch-size", type=int, default=4)
+    parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--self-patch-tolerance", type=float, default=1e-3)
     parser.add_argument("--limit", type=int)
     parser.add_argument("--start", type=int, default=0)

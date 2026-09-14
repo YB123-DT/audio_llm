@@ -16,6 +16,7 @@ import importlib
 import importlib.machinery
 import json
 import logging
+import random
 import re
 import sys
 import types
@@ -211,6 +212,18 @@ def _make_configs(OmegaConf: Any, args: argparse.Namespace) -> tuple[Any, Any]:
 
 def load_model(args: argparse.Namespace) -> tuple[Any, Any, Any, Any]:
     torch, OmegaConf, model_factory, whisper = _import_runtime(args.slam_llm_root)
+    seed = getattr(args, "seed", None)
+    if seed is not None:
+        random.seed(seed)
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
+        try:
+            import numpy as np
+
+            np.random.seed(seed)
+        except ImportError:  # pragma: no cover - numpy is a runtime dependency
+            pass
     train_config, model_config = _make_configs(OmegaConf, args)
     LOGGER.info("loading frozen model")
     model, tokenizer = model_factory(
