@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Run frozen SLAM-Omni diagnostics on a RAVDESS manifest.
 
-The script deliberately has separate ``output`` and ``hidden`` stages.  The
-hidden stage performs one encoder/projector/LLM forward per clip and writes
-small pooled vectors plus metadata.  It does not train, alter checkpoints, or
-decode generated speech.
+The script deliberately separates free ``output``, teacher-forced
+``forced-choice``, and ``hidden`` stages.  The hidden stage performs one
+encoder/projector/LLM forward per clip and writes small pooled vectors plus
+metadata.  None of the stages train, alter checkpoints, or update model
+parameters.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ import argparse
 import csv
 import importlib
 import importlib.machinery
+import json
 import logging
 import re
 import sys
@@ -34,6 +36,33 @@ TOTAL_AUDIO_VOCAB_SIZE = PADDED_AUDIO_VOCAB_SIZE
 TOTAL_VOCAB_SIZE = PADDED_TEXT_VOCAB_SIZE + TOTAL_AUDIO_VOCAB_SIZE
 SHIFT = PADDED_TEXT_VOCAB_SIZE
 EMOTION_TO_LABEL = {"happy": 1, "sad": 0}
+DEFAULT_PROMPT = "Listen to the speech. Is the speaker HAPPY or SAD? Answer only HAPPY or SAD."
+
+# A small 2x2 prompt/verbalizer matrix makes forced-choice results auditable.
+# The leading space is intentional: it is the token boundary used when the
+# candidate answer follows the ``answer_t`` marker in the SLAM-Omni stream.
+FORCED_CHOICE_CONDITIONS: dict[str, dict[str, str]] = {
+    "upper_prompt__upper_spaced": {
+        "prompt": DEFAULT_PROMPT,
+        "happy_verbalizer": " HAPPY",
+        "sad_verbalizer": " SAD",
+    },
+    "upper_prompt__lower_spaced": {
+        "prompt": DEFAULT_PROMPT,
+        "happy_verbalizer": " happy",
+        "sad_verbalizer": " sad",
+    },
+    "lower_prompt__upper_spaced": {
+        "prompt": "Listen to the speech. Is the speaker happy or sad? Answer only happy or sad.",
+        "happy_verbalizer": " HAPPY",
+        "sad_verbalizer": " SAD",
+    },
+    "lower_prompt__lower_spaced": {
+        "prompt": "Listen to the speech. Is the speaker happy or sad? Answer only happy or sad.",
+        "happy_verbalizer": " happy",
+        "sad_verbalizer": " sad",
+    },
+}
 
 
 def normalize_prediction(text: str) -> tuple[str, str]:
@@ -196,10 +225,8 @@ def load_model(args: argparse.Namespace) -> tuple[Any, Any, Any, Any]:
     return torch, model, tokenizer, whisper
 
 
-def _audio_inputs(torch: Any, whisper: Any, model: Any, tokenizer: Any, wav_path: Path, prompt: str) -> tuple[dict[str, Any], dict[str, int]]:
-    audio_raw = _load_audio_16k(whisper, wav_path)
-    audio_raw = whisper.pad_or_trim(audio_raw)
-    audio_mel = whisper.log_mel_spectrogram(audio_raw, n_mels=80).permute(1, 0)
+def _build_audio_inputs(torch: Any, model: Any, tokenizer: Any, audio_mel: Any, prompt: str) -> tuple[dict[str, Any], dict[str, int]]:
+    """Build the multimodal token streams for an already prepared mel."""
     audio_length = (audio_mel.shape[0] + 1) // 2 // 5
 
     vocab = model.model_config.vocab_config
@@ -249,6 +276,13 @@ def _audio_inputs(torch: Any, whisper: Any, model: Any, tokenizer: Any, wav_path
     return batch, {"audio_start": audio_start, "audio_length": audio_length, "prompt_last": prompt_length - 1}
 
 
+def _audio_inputs(torch: Any, whisper: Any, model: Any, tokenizer: Any, wav_path: Path, prompt: str) -> tuple[dict[str, Any], dict[str, int]]:
+    audio_raw = _load_audio_16k(whisper, wav_path)
+    audio_raw = whisper.pad_or_trim(audio_raw)
+    audio_mel = whisper.log_mel_spectrogram(audio_raw, n_mels=80).permute(1, 0)
+    return _build_audio_inputs(torch, model, tokenizer, audio_mel, prompt)
+
+
 def _load_audio_16k(whisper: Any, wav_path: Path) -> Any:
     """Load a WAV through Whisper, with a dependency-light ffmpeg fallback."""
     try:
@@ -285,7 +319,8 @@ def _extract_whisper_layers(torch: Any, encoder: Any, audio_mel: Any) -> tuple[A
     return x, torch.stack(means, dim=1), names
 
 
-def _compose_llm_inputs(torch: Any, model: Any, input_ids: Any, attention_mask: Any, encoder_outs: Any, projector_outs: Any, audio_start: int, audio_length: int) -> Any:
+def _embed_llm_input_ids(model: Any, input_ids: Any) -> Any:
+    """Embed the four parallel SLAM-Omni streams with the official LLM."""
     llm = model.llm
     if hasattr(llm.model, "embed_tokens"):
         inputs_embeds = llm.model.embed_tokens(input_ids)
@@ -293,6 +328,11 @@ def _compose_llm_inputs(torch: Any, model: Any, input_ids: Any, attention_mask: 
         inputs_embeds = llm.model.model.embed_tokens(input_ids)
     else:
         inputs_embeds = llm.model.model.model.embed_tokens(input_ids)
+    return inputs_embeds
+
+
+def _compose_llm_inputs(torch: Any, model: Any, input_ids: Any, attention_mask: Any, encoder_outs: Any, projector_outs: Any, audio_start: int, audio_length: int) -> Any:
+    inputs_embeds = _embed_llm_input_ids(model, input_ids)
     modality_mask = torch.zeros((input_ids.shape[0], input_ids.shape[-1]), dtype=torch.bool, device=input_ids.device)
     modality_mask[:, audio_start : audio_start + audio_length] = True
     modality_mask = modality_mask.unsqueeze(1).repeat(1, CODE_LAYER, 1)
@@ -301,6 +341,54 @@ def _compose_llm_inputs(torch: Any, model: Any, input_ids: Any, attention_mask: 
     encoder_outs_pad[:, :CODE_LAYER, audio_start : audio_start + modality_lengths] = projector_outs[:, :modality_lengths].unsqueeze(1)
     inputs_embeds[:, :CODE_LAYER] = encoder_outs_pad[:, :CODE_LAYER] + inputs_embeds[:, :CODE_LAYER] * (~modality_mask[..., None])
     return inputs_embeds.mean(dim=1), attention_mask
+
+
+def _append_text_candidate(torch: Any, model: Any, base_inputs_embeds: Any, candidate_ids: list[int]) -> Any:
+    """Append teacher-forced text tokens and audio padding streams."""
+    if not candidate_ids:
+        raise ValueError("Candidate verbalizer tokenizes to an empty sequence")
+    vocab = model.model_config.vocab_config
+    candidate_streams = torch.full(
+        (1, CODE_LAYER + 1, len(candidate_ids)),
+        SHIFT + int(vocab.pad_a),
+        dtype=torch.long,
+        device=base_inputs_embeds.device,
+    )
+    candidate_streams[:, CODE_LAYER, :] = torch.tensor(candidate_ids, dtype=torch.long, device=base_inputs_embeds.device)
+    candidate_embeds = _embed_llm_input_ids(model, candidate_streams).mean(dim=1)
+    return torch.cat((base_inputs_embeds, candidate_embeds), dim=1)
+
+
+def _teacher_forced_logprob(torch: Any, model: Any, base_inputs_embeds: Any, base_attention_mask: Any, candidate_ids: list[int]) -> float:
+    """Return log P(candidate | multimodal prefix) for a token sequence."""
+    with torch.inference_mode():
+        full_inputs_embeds = _append_text_candidate(torch, model, base_inputs_embeds, candidate_ids)
+        full_attention_mask = torch.ones(
+            (full_inputs_embeds.shape[0], full_inputs_embeds.shape[1]),
+            dtype=base_attention_mask.dtype,
+            device=full_inputs_embeds.device,
+        )
+        outputs = model.llm(
+            inputs_embeds=full_inputs_embeds,
+            attention_mask=full_attention_mask,
+            use_cache=False,
+            return_dict=True,
+        )
+        text_vocab_size = int(model.model_config.vocab_config.padded_text_vocabsize)
+        logits = outputs.logits[:, :, :text_vocab_size]
+        prefix_length = base_inputs_embeds.shape[1]
+        positions = torch.arange(len(candidate_ids), device=logits.device) + prefix_length - 1
+        target_ids = torch.tensor(candidate_ids, dtype=torch.long, device=logits.device)
+        token_logprobs = torch.log_softmax(logits[0, positions, :], dim=-1)
+        return float(token_logprobs.gather(1, target_ids[:, None]).sum().item())
+
+
+def _resolve_forced_choice_conditions(names: list[str] | None) -> list[tuple[str, dict[str, str]]]:
+    selected = names or list(FORCED_CHOICE_CONDITIONS)
+    unknown = [name for name in selected if name not in FORCED_CHOICE_CONDITIONS]
+    if unknown:
+        raise ValueError(f"Unknown forced-choice condition(s): {unknown}; choose from {list(FORCED_CHOICE_CONDITIONS)}")
+    return [(name, FORCED_CHOICE_CONDITIONS[name]) for name in selected]
 
 
 def run_output(args: argparse.Namespace) -> None:
@@ -345,6 +433,114 @@ def run_output(args: argparse.Namespace) -> None:
             handle.flush()
             if (index + 1) % 8 == 0:
                 LOGGER.info("output stage: %d/%d", index + 1, len(rows))
+
+
+def run_forced_choice(args: argparse.Namespace) -> None:
+    """Score candidate emotion labels with teacher-forced sequence likelihood."""
+    torch, model, tokenizer, whisper = load_model(args)
+    rows = read_rows(args.manifest)
+    if args.start:
+        rows = rows[args.start :]
+    if args.limit is not None:
+        rows = rows[: args.limit]
+    conditions = _resolve_forced_choice_conditions(args.forced_choice_condition)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    metadata_fields = ["sample_id", "pair_id", "actor", "statement", "repetition", "intensity", "emotion", "ground_truth"]
+    fieldnames = [
+        *metadata_fields,
+        "condition_id",
+        "prompt",
+        "happy_verbalizer",
+        "sad_verbalizer",
+        "happy_token_ids",
+        "sad_token_ids",
+        "happy_logprob",
+        "sad_logprob",
+        "score_happy_minus_sad",
+        "predicted",
+        "correct",
+        "error",
+    ]
+    with args.output.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        for index, row in enumerate(rows):
+            try:
+                audio_raw = whisper.pad_or_trim(_load_audio_16k(whisper, args.ravdess_root / row["path"]))
+                audio_mel = whisper.log_mel_spectrogram(audio_raw, n_mels=80).permute(1, 0)
+                audio_mel_batch = audio_mel.unsqueeze(0).to(next(model.parameters()).device)
+                with torch.inference_mode():
+                    encoder_outs = model.encoder.extract_variable_length_features(audio_mel_batch.permute(0, 2, 1))
+                    projected = model.encoder_projector(encoder_outs)
+                for condition_id, condition in conditions:
+                    result = {key: row.get(key, "") for key in metadata_fields}
+                    result.update(
+                        condition_id=condition_id,
+                        prompt=condition["prompt"],
+                        happy_verbalizer=condition["happy_verbalizer"],
+                        sad_verbalizer=condition["sad_verbalizer"],
+                        happy_token_ids="",
+                        sad_token_ids="",
+                        happy_logprob="",
+                        sad_logprob="",
+                        score_happy_minus_sad="",
+                        predicted="unknown",
+                        correct="False",
+                        error="",
+                    )
+                    try:
+                        batch, positions = _build_audio_inputs(torch, model, tokenizer, audio_mel, condition["prompt"])
+                        base_inputs_embeds, base_attention_mask = _compose_llm_inputs(
+                            torch,
+                            model,
+                            batch["input_ids"],
+                            batch["attention_mask"],
+                            encoder_outs,
+                            projected,
+                            positions["audio_start"],
+                            positions["audio_length"],
+                        )
+                        happy_ids = [int(token_id) for token_id in tokenizer.encode(condition["happy_verbalizer"], add_special_tokens=False)]
+                        sad_ids = [int(token_id) for token_id in tokenizer.encode(condition["sad_verbalizer"], add_special_tokens=False)]
+                        happy_logprob = _teacher_forced_logprob(torch, model, base_inputs_embeds, base_attention_mask, happy_ids)
+                        sad_logprob = _teacher_forced_logprob(torch, model, base_inputs_embeds, base_attention_mask, sad_ids)
+                        score = happy_logprob - sad_logprob
+                        predicted = "happy" if score > 0 else "sad" if score < 0 else "tie"
+                        result.update(
+                            happy_token_ids=json.dumps(happy_ids),
+                            sad_token_ids=json.dumps(sad_ids),
+                            happy_logprob=happy_logprob,
+                            sad_logprob=sad_logprob,
+                            score_happy_minus_sad=score,
+                            predicted=predicted,
+                            correct=str(predicted == row["emotion"]),
+                        )
+                    except Exception as exc:  # keep one condition failure auditable
+                        LOGGER.exception("forced-choice failed for %s/%s", row["sample_id"], condition_id)
+                        result["error"] = f"{type(exc).__name__}: {exc}"
+                    writer.writerow(result)
+            except Exception as exc:  # keep every condition represented on audio failures
+                LOGGER.exception("forced-choice audio failed for %s", row["sample_id"])
+                for condition_id, condition in conditions:
+                    result = {key: row.get(key, "") for key in metadata_fields}
+                    result.update(
+                        condition_id=condition_id,
+                        prompt=condition["prompt"],
+                        happy_verbalizer=condition["happy_verbalizer"],
+                        sad_verbalizer=condition["sad_verbalizer"],
+                        happy_token_ids="",
+                        sad_token_ids="",
+                        happy_logprob="",
+                        sad_logprob="",
+                        score_happy_minus_sad="",
+                        predicted="unknown",
+                        correct="False",
+                        error=f"{type(exc).__name__}: {exc}",
+                    )
+                    writer.writerow(result)
+            handle.flush()
+            if (index + 1) % 8 == 0:
+                LOGGER.info("forced-choice stage: %d/%d", index + 1, len(rows))
 
 
 def run_hidden(args: argparse.Namespace) -> None:
@@ -434,7 +630,7 @@ def run_hidden(args: argparse.Namespace) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("stage", choices=["output", "hidden"])
+    parser.add_argument("stage", choices=["output", "forced-choice", "hidden"])
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--ravdess-root", type=Path, required=True)
     parser.add_argument("--slam-llm-root", type=Path, required=True)
@@ -443,14 +639,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--output", type=Path, help="CSV path for output stage")
     parser.add_argument("--output-dir", type=Path, help="Directory for hidden-stage tensors")
-    parser.add_argument("--prompt", default="Listen to the speech. Is the speaker HAPPY or SAD? Answer only HAPPY or SAD.")
+    parser.add_argument("--prompt", default=DEFAULT_PROMPT)
+    parser.add_argument(
+        "--forced-choice-condition",
+        action="append",
+        choices=list(FORCED_CHOICE_CONDITIONS),
+        help="Repeat to select forced-choice prompt/verbalizer conditions; default is the full 2x2 matrix",
+    )
     parser.add_argument("--max-new-tokens", type=int, default=32)
     parser.add_argument("--limit", type=int)
     parser.add_argument("--start", type=int, default=0, help="Zero-based manifest row for chunked output runs")
     parser.add_argument("--device", default=None)
     args = parser.parse_args()
-    if args.stage == "output" and args.output is None:
-        parser.error("output stage requires --output")
+    if args.stage in {"output", "forced-choice"} and args.output is None:
+        parser.error(f"{args.stage} stage requires --output")
     if args.stage == "hidden" and args.output_dir is None:
         parser.error("hidden stage requires --output-dir")
     return args
@@ -461,6 +663,8 @@ def main() -> None:
     args = parse_args()
     if args.stage == "output":
         run_output(args)
+    elif args.stage == "forced-choice":
+        run_forced_choice(args)
     else:
         run_hidden(args)
 
