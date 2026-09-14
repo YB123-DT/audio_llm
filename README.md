@@ -9,8 +9,8 @@
 
 ## 当前模型
 
-已下载 SLAM-Omni 官方英语单轮检查点（Qwen2-0.5B + Whisper-small，group size 3）。
-详见 [下载与校验报告](reports/2026-09-14-slam-omni-download.md)。尚未部署推理环境。
+已下载并在冻结条件下完成第一轮 RAVDESS happy/sad 诊断的 SLAM-Omni 官方英语单轮检查点（Qwen2-0.5B + Whisper-small，group size 3）。
+详见 [下载与校验报告](reports/2026-09-14-slam-omni-download.md) 和 [RAVDESS 诊断报告](reports/2026-09-14-ravdess-happy-sad/diagnostic-report.md)。
 
 ## 工作约定
 

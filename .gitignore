@@ -31,3 +31,7 @@ data/
 # Keep curated reports; omit raw runtime logs
 logs/
 *.log
+/results/
+artifacts/*.pt
+artifacts/*.npy
+artifacts/*.npz

@@ -1,0 +1,29 @@
+{
+  "n_rows": 192,
+  "parse_status_counts": {
+    "no_label": 192
+  },
+  "predicted_counts": {
+    "unknown": 192
+  },
+  "correct_count": 0,
+  "all_accuracy": 0.0,
+  "parseable_count": 0,
+  "parseable_accuracy": null,
+  "per_emotion": {
+    "happy": {
+      "n": 96,
+      "correct": 0,
+      "accuracy": 0.0,
+      "parseable": 0
+    },
+    "sad": {
+      "n": 96,
+      "correct": 0,
+      "accuracy": 0.0,
+      "parseable": 0
+    }
+  },
+  "max_new_tokens": 8,
+  "prompt_serialization": "<SYSTEM>: {prompt}\\n "
+}
