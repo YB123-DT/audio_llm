@@ -1,0 +1,76 @@
+{
+  "n_rows": 192,
+  "max_new_tokens": 64,
+  "prompt_serialization": "<SYSTEM>: {prompt}\\n ",
+  "parse_status_counts": {
+    "no_label": 192
+  },
+  "predicted_counts": {
+    "unknown": 192
+  },
+  "correct_count": 0,
+  "all_accuracy": 0.0,
+  "parseable_count": 0,
+  "parseable_accuracy": null,
+  "per_emotion": {
+    "happy": {
+      "n": 96,
+      "correct": 0,
+      "accuracy": 0.0,
+      "parseable": 0
+    },
+    "sad": {
+      "n": 96,
+      "correct": 0,
+      "accuracy": 0.0,
+      "parseable": 0
+    }
+  },
+  "raw_output_char_length": {
+    "min": 231,
+    "max": 299,
+    "mean": 250.921875,
+    "median": 243.0,
+    "p25": 235.0,
+    "p75": 281.0
+  },
+  "chunk_rows": [
+    {
+      "start": 0,
+      "limit": 32,
+      "rows": 32,
+      "file": "pred_000.csv"
+    },
+    {
+      "start": 32,
+      "limit": 32,
+      "rows": 32,
+      "file": "pred_032.csv"
+    },
+    {
+      "start": 64,
+      "limit": 32,
+      "rows": 32,
+      "file": "pred_064.csv"
+    },
+    {
+      "start": 96,
+      "limit": 32,
+      "rows": 32,
+      "file": "pred_096.csv"
+    },
+    {
+      "start": 128,
+      "limit": 32,
+      "rows": 32,
+      "file": "pred_128.csv"
+    },
+    {
+      "start": 160,
+      "limit": 32,
+      "rows": 32,
+      "file": "pred_160.csv"
+    }
+  ],
+  "remote_run_dir": "/data2/yb/audio_llm_runs/ravdess_happy_sad_intensity01_nt64"
+}

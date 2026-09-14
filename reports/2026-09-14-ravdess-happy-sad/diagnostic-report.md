@@ -34,9 +34,9 @@ Listen to the speech. Is the speaker HAPPY or SAD?
 Answer only HAPPY or SAD.
 ```
 
-为和官方 SLAM-Omni 数据集保持一致，实际 token 序列化为 `<SYSTEM>: {prompt}\n `。推理为 greedy、`decode_text_only=True`、`max_new_tokens=8`；模型和所有参数保持冻结。
+为和官方 SLAM-Omni 数据集保持一致，实际 token 序列化为 `<SYSTEM>: {prompt}\n `。推理为 greedy、`decode_text_only=True`；模型和所有参数保持冻结。原始第一轮使用 `max_new_tokens=8`，随后在完全相同的 prompt、manifest、checkpoint 和解码设置下追加 `max_new_tokens=32` 与 `64`，用来区分“输出被截断”和“模型没有按要求输出标签”。
 
-结果：[predictions.csv](./predictions.csv)、[output_summary.json](./output_summary.json)
+原始 8-token 结果：[predictions.csv](./predictions.csv)、[output_summary.json](./output_summary.json)
 
 - 192/192 条输出都没有出现独立的 `HAPPY` 或 `SAD` 标签
 - `predicted=unknown`：192 条
@@ -44,7 +44,17 @@ Answer only HAPPY or SAD.
 - 可解析样本数：0，因此可解析准确率不定义
 - 典型原始输出：`It's be the weather. It you`、`It's be not be not be the`
 
-这说明在这个冻结 checkpoint、这个任务 prompt 和解码设置下，模型没有把答案输出成要求的二分类标签；后面的隐藏态结果仍然可以判断信息是否存在。
+8 个新 token 的确可能让句子看起来不完整，所以追加了两个更长的生成预算。两组重跑均覆盖同一 192 条样本，分块完整性为 6×32：
+
+| `max_new_tokens` | 样本数 | 含 HAPPY/SAD 的输出 | 正确数 | accuracy | 原始输出字符数（min / median / max） |
+|---:|---:|---:|---:|---:|---:|
+| 8  | 192 | 0 | 0 | 0.0% | 25 / 26 / 28（截断前缀） |
+| 32 | 192 | 0 | 0 | 0.0% | 123 / 132 / 148 |
+| 64 | 192 | 0 | 0 | 0.0% | 231 / 243 / 299 |
+
+32-token 结果见 [predictions_nt32.csv](./predictions_nt32.csv) 和 [output_nt32_summary.json](./output_nt32_summary.json)，64-token 结果见 [predictions_nt64.csv](./predictions_nt64.csv) 和 [output_nt64_summary.json](./output_nt64_summary.json)；对比表见 [output_budget_comparison.csv](./output_budget_comparison.csv)。较长预算只让模型继续生成重复、语义不稳定的文本（例如反复出现 `of a question`、`of a list`），没有出现一个可解析的独立 `HAPPY` 或 `SAD`。因此第一轮的 0% 不能归因于 8-token 截断，但结论仍限定在这个冻结 checkpoint、这个 prompt 和自由生成解码设置；它不是对模型能力的因果证明。
+
+后面的隐藏态结果仍然可以判断 emotion 信息是否存在。
 
 ## 阶段二：隐藏态保存
 
@@ -97,7 +107,7 @@ speaker-held-out 固定将 actor 19–24 作为测试集；statement-held-out �
 1. **信息可读出。** Emotion 在 Whisper 后段、projector 以及 LLM audio-token mean 中都能被线性 probe 读出；projector 在本轮两个 split 上分别达到 95.8% 和 91.1%。
 2. **没有形成高 parallelism 的跨文本方向。** PS 没有从早期 audio 到 projector/LLM 持续升高，而是从 0.716 降到约 0.1 或更低。因此本轮证据更接近“emotion 可解码，但 `sad-happy` 全局差向量没有被组织成 context-invariant 方向”。
 3. **决策位置仍带有部分信息，但不稳定。** `llm_decision` 的 probe 高于随机基线，statement-held-out 末层则接近 0.5；它没有表现出强的跨 context parallelism。
-4. **最终文本输出没有使用这些信息。** 192 条生成结果都没有给出可解析的 HAPPY/SAD 标签。在“可读出 + 输出不使用”的意义上，这个 checkpoint/任务设置表现为 information available at internal states but not converted into the requested output。
+4. **最终文本输出没有使用这些信息。** 在 `max_new_tokens=8/32/64` 三个预算下，192 条生成结果都没有给出可解析的 HAPPY/SAD 标签；增加生成长度只产生更长的重复文本，没有改变 0/192 的结果。在“可读出 + 输出不使用”的意义上，这个 checkpoint/任务设置表现为 information available at internal states but not converted into the requested output。
 
 这是一轮冻结、二分类、固定 intensity 的诊断，不构成因果证明。RAVDESS 的 actor/acoustic 属性仍可能和 emotion 混杂；本轮 audio encoder 使用固定 30 秒 Whisper 输入并做全时间 mean pooling，也可能削弱 token-level 的情绪方向。下一轮若继续，应先做有效音频边界/token-level pooling 和按 actor 的多折 held-out，再考虑任何模型改动或训练。
 
