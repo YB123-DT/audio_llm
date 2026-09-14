@@ -474,6 +474,7 @@ def run_forced_choice(args: argparse.Namespace) -> None:
                     projected = model.encoder_projector(encoder_outs)
                 for condition_id, condition in conditions:
                     result = {key: row.get(key, "") for key in metadata_fields}
+                    result["ground_truth"] = row["emotion"]
                     result.update(
                         condition_id=condition_id,
                         prompt=condition["prompt"],
@@ -523,6 +524,7 @@ def run_forced_choice(args: argparse.Namespace) -> None:
                 LOGGER.exception("forced-choice audio failed for %s", row["sample_id"])
                 for condition_id, condition in conditions:
                     result = {key: row.get(key, "") for key in metadata_fields}
+                    result["ground_truth"] = row["emotion"]
                     result.update(
                         condition_id=condition_id,
                         prompt=condition["prompt"],
