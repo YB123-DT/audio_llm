@@ -76,6 +76,24 @@ def _replace_hidden(output: Any, hidden: Any) -> Any:
     return hidden
 
 
+def _decoder_forward(model: Any, inputs_embeds: Any, attention_mask: Any) -> Any:
+    """Run only the decoder backbone when the Qwen module is available."""
+    backbone = getattr(getattr(model, "llm", None), "model", None)
+    if backbone is not None and hasattr(backbone, "layers"):
+        return backbone(
+            inputs_embeds=inputs_embeds,
+            attention_mask=attention_mask,
+            use_cache=False,
+            return_dict=True,
+        )
+    return model.llm(
+        inputs_embeds=inputs_embeds,
+        attention_mask=attention_mask,
+        use_cache=False,
+        return_dict=True,
+    )
+
+
 def _append_candidate_batch(
     torch: Any,
     model: Any,
@@ -169,17 +187,16 @@ def _score_candidate_pairs(
         )
     try:
         with torch.inference_mode():
-            outputs = model.llm(
-                inputs_embeds=full_inputs_embeds,
-                attention_mask=full_attention_mask,
-                use_cache=False,
-                return_dict=True,
-            )
             text_vocab_size = int(model.model_config.vocab_config.padded_text_vocabsize)
-            logits = outputs.logits[:, :, :text_vocab_size]
             candidate_length = len(happy_ids)
-            positions = torch.arange(candidate_length, device=logits.device) + prefix_length - 1
-            token_logprobs = torch.log_softmax(logits[:, positions, :], dim=-1)
+            positions = torch.arange(candidate_length, device=full_inputs_embeds.device) + prefix_length - 1
+            outputs = _decoder_forward(model, full_inputs_embeds, full_attention_mask)
+            if hasattr(outputs, "last_hidden_state"):
+                selected_hidden = outputs.last_hidden_state[:, positions, :]
+                logits = model.llm.lm_head(selected_hidden)[..., :text_vocab_size]
+            else:
+                logits = outputs.logits[:, positions, :text_vocab_size]
+            token_logprobs = torch.log_softmax(logits, dim=-1)
             target_ids = torch.tensor(
                 candidate_ids_batch,
                 dtype=torch.long,
@@ -281,15 +298,14 @@ def _capture_donor_chunk(
         handles.append(layers[layer_index].register_forward_hook(make_hook(layer_index)))
     try:
         with torch.inference_mode():
-            model.llm(
-                inputs_embeds=prefix_batch,
-                attention_mask=torch.ones(
+            _decoder_forward(
+                model,
+                prefix_batch,
+                torch.ones(
                     (prefix_batch.shape[0], prefix_batch.shape[1]),
                     dtype=torch.bool,
                     device=prefix_batch.device,
                 ),
-                use_cache=False,
-                return_dict=True,
             )
     finally:
         for handle in handles:
@@ -701,7 +717,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--condition", choices=list(FORCED_CHOICE_CONDITIONS), default="upper_prompt__upper_spaced")
     parser.add_argument("--layer", nargs="+", type=int, default=list(DEFAULT_LAYERS))
     parser.add_argument("--patch-kind", nargs="+", choices=list(PATCH_KINDS), default=list(PATCH_KINDS))
-    parser.add_argument("--batch-size", type=int, default=8)
+    parser.add_argument("--batch-size", type=int, default=4)
     parser.add_argument("--self-patch-tolerance", type=float, default=1e-3)
     parser.add_argument("--limit", type=int)
     parser.add_argument("--start", type=int, default=0)
