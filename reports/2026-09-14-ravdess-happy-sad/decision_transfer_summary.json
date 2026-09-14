@@ -1,0 +1,113 @@
+{
+  "source": "reports/2026-09-14-ravdess-happy-sad/probe_accuracy.csv",
+  "n_layers": 25,
+  "chance_baseline": 0.5,
+  "embedding_baseline": {
+    "layer_index": 0,
+    "layer": "embedding",
+    "audio_speaker_probe": 0.9375,
+    "decision_speaker_probe": 0.5,
+    "speaker_gap_audio_minus_decision": 0.4375,
+    "speaker_decision_step": null,
+    "speaker_above_chance_retention": 0.0,
+    "audio_statement_probe": 0.9010416666666667,
+    "decision_statement_probe": 0.5,
+    "statement_gap_audio_minus_decision": 0.40104166666666674,
+    "statement_decision_step": null,
+    "statement_above_chance_retention": 0.0
+  },
+  "bottleneck_search_excludes_layer_indices": [
+    0
+  ],
+  "largest_negative_decision_step": {
+    "speaker": {
+      "layer_index": 15,
+      "layer": "layer_14",
+      "audio_speaker_probe": 0.9166666666666666,
+      "decision_speaker_probe": 0.6458333333333334,
+      "speaker_gap_audio_minus_decision": 0.27083333333333326,
+      "speaker_decision_step": -0.125,
+      "speaker_above_chance_retention": 0.35000000000000014,
+      "audio_statement_probe": 0.8020833333333334,
+      "decision_statement_probe": 0.5520833333333333,
+      "statement_gap_audio_minus_decision": 0.2500000000000001,
+      "statement_decision_step": -0.02604166666666674,
+      "statement_above_chance_retention": 0.172413793103448
+    },
+    "statement": {
+      "layer_index": 23,
+      "layer": "layer_22",
+      "audio_speaker_probe": 0.9166666666666666,
+      "decision_speaker_probe": 0.7291666666666666,
+      "speaker_gap_audio_minus_decision": 0.1875,
+      "speaker_decision_step": -0.04166666666666674,
+      "speaker_above_chance_retention": 0.5499999999999999,
+      "audio_statement_probe": 0.828125,
+      "decision_statement_probe": 0.515625,
+      "statement_gap_audio_minus_decision": 0.3125,
+      "statement_decision_step": -0.0625,
+      "statement_above_chance_retention": 0.047619047619047616
+    }
+  },
+  "largest_audio_minus_decision_gap": {
+    "speaker": {
+      "layer_index": 16,
+      "layer": "layer_15",
+      "audio_speaker_probe": 0.9166666666666666,
+      "decision_speaker_probe": 0.6041666666666666,
+      "speaker_gap_audio_minus_decision": 0.3125,
+      "speaker_decision_step": -0.04166666666666674,
+      "speaker_above_chance_retention": 0.24999999999999994,
+      "audio_statement_probe": 0.8229166666666667,
+      "decision_statement_probe": 0.5625,
+      "statement_gap_audio_minus_decision": 0.26041666666666674,
+      "statement_decision_step": 0.01041666666666674,
+      "statement_above_chance_retention": 0.19354838709677416
+    },
+    "statement": {
+      "layer_index": 18,
+      "layer": "layer_17",
+      "audio_speaker_probe": 0.9375,
+      "decision_speaker_probe": 0.8333333333333334,
+      "speaker_gap_audio_minus_decision": 0.10416666666666663,
+      "speaker_decision_step": 0.0625,
+      "speaker_above_chance_retention": 0.761904761904762,
+      "audio_statement_probe": 0.8333333333333333,
+      "decision_statement_probe": 0.515625,
+      "statement_gap_audio_minus_decision": 0.31770833333333326,
+      "statement_decision_step": -0.046875,
+      "statement_above_chance_retention": 0.046875000000000014
+    }
+  },
+  "largest_gap_with_audio_probe_at_least_0_9": {
+    "speaker": {
+      "layer_index": 16,
+      "layer": "layer_15",
+      "audio_speaker_probe": 0.9166666666666666,
+      "decision_speaker_probe": 0.6041666666666666,
+      "speaker_gap_audio_minus_decision": 0.3125,
+      "speaker_decision_step": -0.04166666666666674,
+      "speaker_above_chance_retention": 0.24999999999999994,
+      "audio_statement_probe": 0.8229166666666667,
+      "decision_statement_probe": 0.5625,
+      "statement_gap_audio_minus_decision": 0.26041666666666674,
+      "statement_decision_step": 0.01041666666666674,
+      "statement_above_chance_retention": 0.19354838709677416
+    },
+    "statement": {
+      "layer_index": 2,
+      "layer": "layer_1",
+      "audio_speaker_probe": 0.9583333333333334,
+      "decision_speaker_probe": 0.7708333333333334,
+      "speaker_gap_audio_minus_decision": 0.1875,
+      "speaker_decision_step": 0.10416666666666674,
+      "speaker_above_chance_retention": 0.5909090909090909,
+      "audio_statement_probe": 0.9114583333333333,
+      "decision_statement_probe": 0.6510416666666666,
+      "statement_gap_audio_minus_decision": 0.26041666666666663,
+      "statement_decision_step": -0.04166666666666674,
+      "statement_above_chance_retention": 0.36708860759493667
+    }
+  },
+  "interpretation": "Probe gap is a layerwise readout-retention diagnostic, not a causal proof of a single transfer bottleneck."
+}

@@ -8,9 +8,34 @@ import numpy as np
 from scripts.analyze_output_behavior import summarize_prediction_file
 from scripts.analyze_forced_choice import _roc_auc
 from scripts.analyze_slam_omni_diagnostics import _conditioned_parallelism
+from scripts.analyze_decision_transfer import build_transfer_rows, summarize_transfer
 
 
 class DiagnosticMetricTests(unittest.TestCase):
+    def test_decision_transfer_reports_probe_gap_and_layer_step(self) -> None:
+        rows = []
+        for family, layer_values in (
+            ("llm_audio_mean", ((0.95, 0.90), (0.90, 0.85))),
+            ("llm_decision", ((0.80, 0.70), (0.60, 0.50))),
+        ):
+            for layer_index, (speaker, statement) in enumerate(layer_values):
+                rows.append(
+                    {
+                        "family": family,
+                        "layer_index": str(layer_index),
+                        "layer": f"layer_{layer_index}",
+                        "speaker_held_out_accuracy": str(speaker),
+                        "statement_held_out_mean": str(statement),
+                    }
+                )
+        transfer = build_transfer_rows(rows)
+        self.assertAlmostEqual(transfer[1]["speaker_gap_audio_minus_decision"], 0.30)
+        self.assertAlmostEqual(transfer[1]["speaker_decision_step"], -0.20)
+        self.assertAlmostEqual(transfer[1]["statement_gap_audio_minus_decision"], 0.35)
+        summary = summarize_transfer(transfer)
+        self.assertEqual(summary["largest_audio_minus_decision_gap"]["speaker"]["layer_index"], 1)
+        self.assertEqual(summary["bottleneck_search_excludes_layer_indices"], [0])
+
     def test_roc_auc_uses_pairwise_tie_handling(self) -> None:
         self.assertAlmostEqual(_roc_auc([1, 0], [0.9, 0.1]), 1.0)
         self.assertAlmostEqual(_roc_auc([1, 0], [0.5, 0.5]), 0.5)

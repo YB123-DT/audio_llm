@@ -136,7 +136,30 @@ speaker-held-out 固定将 actor 19–24 作为测试集；statement-held-out �
 | LLM decision state | 0.833（layer 7） | 0.693（layer 0） | 0.771 / 0.516 |
 | LLM prompt-last control | 0.500 | 0.500 | 0.500 / 0.500 |
 
-## 阶段四：forced-choice likelihood
+## 阶段四：audio-token → decision-token 的 probe transfer
+
+为了定位 emotion 信息从 `llm_audio_mean` 进入 `llm_decision` 后何时变弱，按相同 LLM layer index 对齐两类表示，并计算：
+
+$$
+G_l=A_l-D_l,
+\qquad
+\Delta D_l=D_l-D_{l-1},
+\qquad
+R_l=\frac{D_l-0.5}{A_l-0.5}.
+$$
+
+其中 $A_l$ 是 audio-token mean 的 probe，$D_l$ 是 decision state 的 probe，$G_l$ 是两者的 readout gap，$\Delta D_l$ 用来找 decision probe 的单层突降，$R_l$ 是相对 chance 的保留率。`embedding` 行作为输入基线保留在 CSV 中，但不作为 LLM 层间 bottleneck；否则会把“尚未经过 LLM decision 位置”的基线差异误报成某一层的传递损失。
+
+结果见 [decision_transfer.csv](./decision_transfer.csv)、[decision_transfer_summary.json](./decision_transfer_summary.json) 和 [decision_transfer.png](./decision_transfer.png)。候选位置如下（仅搜索 `layer_0`–`layer_23`）：
+
+| held-out split | decision probe 最大单层下降 | 该点的 audio probe | LLM 层内最大 audio−decision gap | 该点 audio / decision / 保留率 |
+|---|---|---:|---|---|
+| speaker | `layer_13 → layer_14`: 0.7708 → 0.6458（−0.1250） | 0.9167 | `layer_15` | 0.9167 / 0.6042 / 0.250 |
+| statement | `layer_21 → layer_22`: 0.5781 → 0.5156（−0.0625） | 0.8281 | `layer_17` | 0.8333 / 0.5156 / 0.047 |
+
+因此，speaker-held-out 上最符合“audio probe 仍高、decision probe 突降”的候选区域是 `layer_14`，而最大累计 gap 出现在 `layer_15`；statement-held-out 的最大 gap 在 `layer_17`，末段 `layer_22` 还有一次较小突降。由于每个 held-out 测试集只有 48 条样本、准确率步长较粗，这些层只能作为下一轮因果干预的候选点。该分析比较的是两个位置上独立训练的线性 readout，属于 probe-retention 代理，不能证明单一层完成了因果的信息传递或删除。
+
+## 阶段五：forced-choice likelihood
 
 为避免依赖模型主动遵循输出格式，对每条音频直接计算候选标签的 teacher-forced sequence likelihood：
 
@@ -159,9 +182,10 @@ $$
 
 1. **信息可读出。** Emotion 在 Whisper 后段、projector 以及 LLM audio-token mean 中都能被线性 probe 读出；projector 在本轮两个 split 上分别达到 95.8% 和 91.1%。
 2. **global PS 不能单独归因于 lexical content。** 控制 actor 和 repetition 后，`PS_text` 高于 `PS_all`，但仍没有形成随深度上升的稳定轨迹；`PS_speaker` 与 `PS_repetition` 表明 speaker 和 repetition 也会改变差向量方向。当前更稳妥的表述是 emotion 差向量具有明显的 context dependence。
-3. **决策位置仍带有部分信息，但不稳定。** `llm_decision` 的 probe 高于随机基线，statement-held-out 末层则接近 0.5；它没有表现出强的跨 context parallelism。
-4. **free generation 没有完成标签任务。** 在 `max_new_tokens=8/32/64` 三个预算下，192 条生成结果都没有给出可解析的 HAPPY/SAD 标签；这对应的是 label compliance/coverage=0%，不是一个有定义的二分类 accuracy。原始 8-token 中 93/96 个 pair 的文本完全相同，长预算下差异增多但仍是重复续写。
-5. **forced-choice 也没有显示可用的情绪决策信号。** 对每条音频计算候选序列的 teacher-forced log-likelihood，并用 $S(x)=\log P(\text{happy}\mid x,p)-\log P(\text{sad}\mid x,p)$ 决策。4 个 prompt/verbalizer 条件的 accuracy 都是 50.0%，ROC-AUC 为 0.486–0.524，matched-pair 的 `S(happy)-S(sad)` 正方向比例为 0.458–0.500；结果见 [forced_choice_summary.csv](./forced_choice_summary.csv)、[forced_choice_summary.json](./forced_choice_summary.json) 和 [forced_choice_pair_margins.csv](./forced_choice_pair_margins.csv)。这说明当前设置下 final likelihood readout 没有把内部可读出的 emotion 分离成稳定的 happy/sad 选择。
+3. **audio-token 到 decision-token 的候选瓶颈已定位。** probe-retention 代理在 speaker split 的 `layer_14` 出现最大单层下降（−0.1250），`layer_15` 出现最大 LLM 层内 gap（0.3125）；statement split 的最大 gap 在 `layer_17`，`layer_22` 有另一处突降。它们是下一轮 activation patching、token ablation 或 causal tracing 的候选层，不是已经证明的因果瓶颈。
+4. **决策位置仍带有部分信息，但不稳定。** `llm_decision` 的 probe 高于随机基线，statement-held-out 末层则接近 0.5；它没有表现出强的跨 context parallelism。
+5. **free generation 没有完成标签任务。** 在 `max_new_tokens=8/32/64` 三个预算下，192 条生成结果都没有给出可解析的 HAPPY/SAD 标签；这对应的是 label compliance/coverage=0%，不是一个有定义的二分类 accuracy。原始 8-token 中 93/96 个 pair 的文本完全相同，长预算下差异增多但仍是重复续写。
+6. **forced-choice 也没有显示可用的情绪决策信号。** 对每条音频计算候选序列的 teacher-forced log-likelihood，并用 $S(x)=\log P(\text{happy}\mid x,p)-\log P(\text{sad}\mid x,p)$ 决策。4 个 prompt/verbalizer 条件的 accuracy 都是 50.0%，ROC-AUC 为 0.486–0.524，matched-pair 的 `S(happy)-S(sad)` 正方向比例为 0.458–0.500；结果见 [forced_choice_summary.csv](./forced_choice_summary.csv)、[forced_choice_summary.json](./forced_choice_summary.json) 和 [forced_choice_pair_margins.csv](./forced_choice_pair_margins.csv)。这说明当前设置下 final likelihood readout 没有把内部可读出的 emotion 分离成稳定的 happy/sad 选择。
 
 这是一轮冻结、二分类、固定 intensity 的诊断，不构成因果证明。上述 forced-choice 结果只说明当前 checkpoint、手工重建配置、prompt/verbalizer 和自由音频输入下没有超过机会水平，不能写成“decoder 已被证明完全不使用 emotion”；instruction-following 能力不足或 checkpoint/config 加载问题仍需单独排除。RAVDESS 的 actor/acoustic 属性也可能和 emotion 混杂；本轮 audio encoder 使用固定 30 秒 Whisper 输入并做全时间 mean pooling，也可能削弱 token-level 的情绪方向。下一轮应先验证官方 checkpoint/config 加载和 text-only likelihood 校准，再做有效音频边界/token-level pooling 与按 actor 的多折 held-out。
 
@@ -174,7 +198,16 @@ $$
 - [analyze_slam_omni_diagnostics.py](../../scripts/analyze_slam_omni_diagnostics.py)
 - [analyze_output_behavior.py](../../scripts/analyze_output_behavior.py)
 - [analyze_forced_choice.py](../../scripts/analyze_forced_choice.py)
+- [analyze_decision_transfer.py](../../scripts/analyze_decision_transfer.py)
 
 forced-choice 运行阶段为 `slam_omni_diagnostics.py forced-choice`，默认执行 2×2 prompt/verbalizer 矩阵；候选标签按完整 token sequence 做 teacher-forced likelihood，不能用单 token argmax 替代。
+
+probe transfer 汇总命令为：
+
+```bash
+python scripts/analyze_decision_transfer.py \
+  --probe-accuracy reports/2026-09-14-ravdess-happy-sad/probe_accuracy.csv \
+  --output-dir reports/2026-09-14-ravdess-happy-sad
+```
 
 远端依赖代码使用官方 SLAM-LLM checkout `/data2/yb/paper/SLAM-LLM`；模型 checkpoint 仍在 `/data2/yb/paper/SLAM-Omni-0.5B/model.pt`，不纳入 Git。模型 SHA-256 为 `601055c1d7022f076a29f1c22693aa6038083631f54e51204f3099a4ec37249e`。
