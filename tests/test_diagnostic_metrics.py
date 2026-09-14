@@ -9,9 +9,56 @@ from scripts.analyze_output_behavior import summarize_prediction_file
 from scripts.analyze_forced_choice import _roc_auc
 from scripts.analyze_slam_omni_diagnostics import _conditioned_parallelism
 from scripts.analyze_decision_transfer import build_transfer_rows, summarize_transfer
+from scripts.analyze_activation_patching import build_mechanism_rows, summarize_patch_rows
+from scripts.run_activation_patching import _pair_indices, _patch_hook
+
+try:
+    import torch as torch_lib
+except ImportError:  # Local metric-only environments do not need torch.
+    torch_lib = None
 
 
 class DiagnosticMetricTests(unittest.TestCase):
+    def test_activation_patch_effect_and_mechanism_mapping(self) -> None:
+        rows = []
+        for patch_kind, patched_happy, patched_sad in (
+            ("audio_tokens", -1.4, -0.6),
+            ("decision_token", -1.8, -0.2),
+        ):
+            rows.append(
+                {
+                    "pair_id": "pair_0",
+                    "layer_index": "7",
+                    "layer": "layer_7",
+                    "patch_kind": patch_kind,
+                    "baseline_happy_score": "-1.0",
+                    "baseline_sad_score": "-1.0",
+                    "patched_happy_from_sad_score": str(patched_happy),
+                    "patched_sad_from_happy_score": str(patched_sad),
+                    "error": "",
+                }
+            )
+        summaries = summarize_patch_rows(rows)
+        self.assertEqual(len(summaries), 2)
+        self.assertAlmostEqual(summaries[0]["mean_counterfactual_effect"], 0.4)
+        mechanisms = build_mechanism_rows(summaries)
+        self.assertEqual(len(mechanisms), 1)
+        self.assertIn("downstream readout", mechanisms[0]["interpretation"])
+
+    @unittest.skipIf(torch_lib is None, "torch is required for hook tensor checks")
+    def test_activation_patch_pair_matching_and_hook_positions(self) -> None:
+        rows = [
+            {"pair_id": "p", "emotion": "sad", "actor": "01", "statement": "01", "repetition": "01", "intensity": "01", "sample_id": "p_sad"},
+            {"pair_id": "p", "emotion": "happy", "actor": "01", "statement": "01", "repetition": "01", "intensity": "01", "sample_id": "p_happy"},
+        ]
+        pairs = _pair_indices(rows)
+        self.assertEqual(pairs[0]["happy"]["sample_id"], "p_happy")
+        donor = torch_lib.full((1, 2, 3), 9.0)
+        output = (torch_lib.zeros((1, 5, 3)), "aux")
+        patched = _patch_hook(donor, "audio_tokens", 1, 2, 4)(None, None, output)
+        self.assertTrue(torch_lib.equal(patched[0][0], torch_lib.zeros(3)))
+        self.assertTrue(torch_lib.equal(patched[0][1:3], donor[0]))
+        self.assertEqual(patched[1], "aux")
     def test_decision_transfer_reports_probe_gap_and_layer_step(self) -> None:
         rows = []
         for family, layer_values in (
