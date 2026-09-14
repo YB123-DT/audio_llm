@@ -191,7 +191,7 @@ $$
 
 原始 1,152 行及汇总见 [activation_patch.csv](./activation_patch.csv)、[activation_patch_summary.csv](./activation_patch_summary.csv)、[activation_patch_mechanism.csv](./activation_patch_mechanism.csv)、[activation_patch_summary.json](./activation_patch_summary.json)、[activation_patch_run.json](./activation_patch_run.json)，图见 [activation_patch_summary.png](./activation_patch_summary.png)。12 个子任务退出码均为 0，`error` 列为空；self-patch 的最大绝对 likelihood 误差为 $1.53\times10^{-5}$（容差 $10^{-3}$）。
 
-表中 CI 是对 96 个 pair-level CE 的描述性正态近似区间；“双向一致”是 happy-side 和 sad-side effect 同时为正的比例：
+表中 CI 是对 96 个 pair-level CE 的描述性正态近似区间，12 个 layer×patch-site 条件之间未做多重比较校正；“双向一致”是 happy-side 和 sad-side effect 同时为正的比例：
 
 | LLM layer | audio-token CE（95% CI；双向一致） | decision-token CE（95% CI；双向一致） |
 |---:|---:|---:|
@@ -202,7 +202,7 @@ $$
 | `layer_22` | -0.001 [-0.014, +0.013]；38.5% | +0.000 [-0.099, +0.099]；46.9% |
 | `layer_23` | +0.000 [+0.000, +0.000]；0.0% | -0.004 [-0.104, +0.097]；47.9% |
 
-按“CI95 下界 > 0”的描述性标准，只有 `layer_17/audio_tokens` 达到明确正向（CE=+0.061，CI=[+0.020,+0.102]，双向一致 59.4%）；同层 `decision_token` 为 −0.059，CI 跨过 0。`layer_7` 的 decision-token 均值为 +0.021 但 CI 下界略低于 0，不能当作有效 patch；`layer_23` 的 audio-token CE 精确为 0，符合最终 block 后没有 downstream token mixing 的结构控制。其余层的两类 patch 也未达到 CI 下界 > 0。
+按“CI95 下界 > 0”的描述性标准，只有 `layer_17/audio_tokens` 达到明确正向（CE=+0.061，CI=[+0.020,+0.102]，双向一致 59.4%）；同层 `decision_token` 为 −0.059，CI 跨过 0。`layer_7` 的 decision-token 均值为 +0.021 但 CI 下界略低于 0，不能当作有效 patch；`layer_23` 的 audio-token CE 精确为 0，符合最终 block 后没有 downstream token mixing 的结构控制。其余层的两类 patch 也未达到 CI 下界 > 0。由于未做多重比较校正，这个 layer-17 信号应视为待复核的假设线索。
 
 因此，这一轮没有得到“所有层都存在 routing failure”或“decoder readout 已被证明可用”的结论。最具体的信号是 `layer_17` audio-token state 的 donor-aligned causal influence，而直接替换同层 decision state 没有稳定地产生相同方向；这与分布式 token computation 或 decision patch 的 off-manifold 风险相一致。该解释仍受单一 prompt/verbalizer、固定 30 秒音频边界和描述性 CI 限制，下一步应在更多 verbalizer/seed、audio-token ablation 和 value/activation tracing 上复核。
 

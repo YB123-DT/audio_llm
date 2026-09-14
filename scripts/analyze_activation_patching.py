@@ -235,6 +235,7 @@ def main() -> None:
         "effect_definition": "CE=0.5*((baseline_happy_margin-patched_happy_target_margin)+(patched_sad_target_margin-baseline_sad_margin))",
         "mechanism_rule": "effective iff descriptive normal-approximation CI95 lower bound > 0; mean and direction fractions remain reported",
         "ci95_definition": "normal approximation over the 96 pair-level counterfactual effects; descriptive only",
+        "multiple_comparison_correction": "none; layer/site mechanism flags are hypothesis-generating",
         "interpretation": "Activation patching measures causal counterfactual influence under the selected layer, position, prompt, and verbalizer; it does not by itself establish natural routing.",
         "layers": sorted({row["layer_index"] for row in summaries}),
     }
