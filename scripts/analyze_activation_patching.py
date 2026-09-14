@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 from collections import defaultdict
 from pathlib import Path
 from statistics import median
@@ -43,6 +44,17 @@ def _effect_values(row: dict[str, str]) -> tuple[float, float, float]:
     return happy_effect, sad_effect, 0.5 * (happy_effect + sad_effect)
 
 
+def _mean_ci95(values: list[float]) -> tuple[float, float, float]:
+    """Return mean, sample SD, and a normal-approximation 95% CI."""
+    mean = sum(values) / len(values)
+    if len(values) < 2:
+        return mean, 0.0, 0.0
+    variance = sum((value - mean) ** 2 for value in values) / (len(values) - 1)
+    standard_deviation = math.sqrt(variance)
+    half_width = 1.96 * standard_deviation / math.sqrt(len(values))
+    return mean, standard_deviation, half_width
+
+
 def summarize_patch_rows(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
     """Aggregate bidirectional donor effects by layer and patch kind."""
     grouped: dict[tuple[int, str], list[dict[str, str]]] = defaultdict(list)
@@ -61,13 +73,17 @@ def summarize_patch_rows(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
             happy_effect > 0 and sad_effect > 0
             for happy_effect, sad_effect in zip(happy_effects, sad_effects)
         ]
+        mean_ce, sd_ce, ci95_half_width = _mean_ci95(ce_values)
         summaries.append(
             {
                 "layer_index": layer_index,
                 "layer": group[0]["layer"],
                 "patch_kind": patch_kind,
                 "n_pairs": len(group),
-                "mean_counterfactual_effect": sum(ce_values) / len(ce_values),
+                "mean_counterfactual_effect": mean_ce,
+                "sd_counterfactual_effect": sd_ce,
+                "ci95_low_counterfactual_effect": mean_ce - ci95_half_width,
+                "ci95_high_counterfactual_effect": mean_ce + ci95_half_width,
                 "median_counterfactual_effect": median(ce_values),
                 "positive_ce_fraction": sum(value > 0 for value in ce_values) / len(ce_values),
                 "mean_happy_effect_toward_sad": sum(happy_effects) / len(happy_effects),
@@ -205,9 +221,18 @@ def main() -> None:
         "n_summary_rows": len(summaries),
         "n_layers": len({row["layer_index"] for row in summaries}),
         "n_pairs_per_condition": sorted({row["n_pairs"] for row in summaries}),
+        "condition_ids": sorted({row.get("condition_id", "") for row in rows if row.get("condition_id")}),
+        "verbalizers": sorted(
+            {
+                (row.get("happy_verbalizer", ""), row.get("sad_verbalizer", ""))
+                for row in rows
+                if row.get("happy_verbalizer") or row.get("sad_verbalizer")
+            }
+        ),
         "patch_site": "post_decoder_block_output",
         "effect_definition": "CE=0.5*((baseline_happy-patched_happy_from_sad)+(patched_sad_from_happy-baseline_sad))",
         "mechanism_rule": "effective iff mean counterfactual effect > 0; sign rule is exploratory",
+        "ci95_definition": "normal approximation over the 96 pair-level counterfactual effects; descriptive only",
         "interpretation": "Activation patching measures causal counterfactual influence under the selected layer, position, prompt, and verbalizer; it does not by itself establish natural routing.",
         "layers": sorted({row["layer_index"] for row in summaries}),
     }
