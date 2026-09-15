@@ -1,0 +1,25 @@
+{
+  "manifest": "artifacts/ravdess_happy_sad_intensity01.csv",
+  "n_samples": 192,
+  "n_pairs": 96,
+  "condition_id": "upper_prompt__lower_spaced",
+  "happy_token_ids": [
+    6247
+  ],
+  "sad_token_ids": [
+    12421
+  ],
+  "layer_count": 24,
+  "head_count": 14,
+  "audio_start": 29,
+  "audio_length": 300,
+  "decision_position": 330,
+  "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+  "model_parameters_frozen": true,
+  "attention_implementation": "eager",
+  "trace_definition": "attention mass from decision position to audio span; value norm is L2 norm of attention-weighted V contribution per head",
+  "pair_delta_definition": "sad minus happy for the same actor/statement/repetition/intensity pair",
+  "causal_status": "descriptive only; no head or value state was patched",
+  "patch_csv": "/data2/yb/audio_llm_runs/ravdess_happy_sad_intensity01_single_token_layer17/layer17_audio_tokens_single_token.csv",
+  "seed": 1234
+}

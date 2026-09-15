@@ -1,0 +1,2 @@
+layer_index,layer,patch_kind,n_pairs,mean_counterfactual_effect,sd_counterfactual_effect,ci95_low_counterfactual_effect,ci95_high_counterfactual_effect,median_counterfactual_effect,positive_ce_fraction,mean_happy_effect_toward_sad,mean_sad_effect_toward_happy,happy_direction_fraction,sad_direction_fraction,both_directions_fraction
+17,layer_17,decision_token,96,-0.013151347637176514,0.34381077017631717,-0.08192782562927385,0.055625130354920824,-0.02189326286315918,0.4583333333333333,-0.009312798579533895,-0.016989896694819134,0.46875,0.4583333333333333,0.4583333333333333

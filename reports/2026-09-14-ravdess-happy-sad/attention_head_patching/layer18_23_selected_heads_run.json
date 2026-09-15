@@ -1,0 +1,60 @@
+{
+  "manifest": "artifacts/ravdess_happy_sad_intensity01.csv",
+  "n_samples": 192,
+  "n_pairs": 96,
+  "condition_id": "upper_prompt__lower_spaced",
+  "happy_token_ids": [
+    6247
+  ],
+  "sad_token_ids": [
+    12421
+  ],
+  "heads": [
+    {
+      "layer": 18,
+      "head": 1
+    },
+    {
+      "layer": 18,
+      "head": 4
+    },
+    {
+      "layer": 20,
+      "head": 12
+    },
+    {
+      "layer": 21,
+      "head": 5
+    },
+    {
+      "layer": 22,
+      "head": 0
+    },
+    {
+      "layer": 22,
+      "head": 3
+    },
+    {
+      "layer": 22,
+      "head": 13
+    },
+    {
+      "layer": 23,
+      "head": 9
+    },
+    {
+      "layer": 22,
+      "head": 10
+    },
+    {
+      "layer": 22,
+      "head": 11
+    }
+  ],
+  "patch_site": "pre_o_proj_decision_head",
+  "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+  "model_parameters_frozen": true,
+  "effect_definition": "symmetric donor-aligned forced-choice margin CE",
+  "causal_status": "targeted head-level activation patch; donor pre-o_proj attention vector is replaced only at decision position",
+  "seed": 1234
+}

@@ -1,0 +1,61 @@
+{
+  "source": "reports/2026-09-14-ravdess-happy-sad/single_token_runs/layer17_audio_tokens_tokenwise.csv",
+  "n_raw_rows": 192,
+  "n_summary_rows": 2,
+  "token_positions": [
+    1,
+    2
+  ],
+  "sequence_csv": "reports/2026-09-14-ravdess-happy-sad/activation_patch.csv",
+  "effect_definition": "per-token CE=0.5*((baseline_happy_margin-patched_happy_target_margin)+(patched_sad_target_margin-baseline_sad_margin)); summing positions reconstructs sequence CE",
+  "ci95_definition": "normal approximation over pair-level effects within each token position",
+  "token_summaries": [
+    {
+      "layer_index": 17,
+      "layer": "layer_17",
+      "patch_kind": "audio_tokens",
+      "token_position": 1,
+      "n_pairs": 96,
+      "mean_counterfactual_effect": 0.05816018581390381,
+      "sd_counterfactual_effect": 0.20428900450260912,
+      "ci95_low_counterfactual_effect": 0.017293873758014063,
+      "ci95_high_counterfactual_effect": 0.09902649786979356,
+      "median_counterfactual_effect": 0.05012941360473633,
+      "positive_ce_fraction": 0.625
+    },
+    {
+      "layer_index": 17,
+      "layer": "layer_17",
+      "patch_kind": "audio_tokens",
+      "token_position": 2,
+      "n_pairs": 96,
+      "mean_counterfactual_effect": 0.0026592363913853965,
+      "sd_counterfactual_effect": 0.14495458797345648,
+      "ci95_low_counterfactual_effect": -0.02633772034879266,
+      "ci95_high_counterfactual_effect": 0.031656193131563454,
+      "median_counterfactual_effect": 0.020115137100219727,
+      "positive_ce_fraction": 0.5520833333333334
+    }
+  ],
+  "sequence_reconstruction": [
+    {
+      "layer_index": 17,
+      "layer": "layer_17",
+      "patch_kind": "audio_tokens",
+      "n_pairs": 96,
+      "mean_sequence_counterfactual_effect": 0.06081942220528921,
+      "sd_sequence_counterfactual_effect": 0.20617512162441146,
+      "ci95_low_sequence_counterfactual_effect": 0.01957580814501015,
+      "ci95_high_sequence_counterfactual_effect": 0.10206303626556826
+    }
+  ],
+  "sequence_comparison": [
+    {
+      "layer_index": 17,
+      "patch_kind": "audio_tokens",
+      "n_pairs_compared": 96,
+      "max_abs_reconstruction_error": 4.291534423828125e-06,
+      "mean_abs_reconstruction_error": 1.2467304865519206e-06
+    }
+  ]
+}

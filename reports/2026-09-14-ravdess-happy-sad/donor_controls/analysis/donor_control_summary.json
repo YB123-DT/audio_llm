@@ -1,0 +1,91 @@
+{
+  "source": "reports/2026-09-14-ravdess-happy-sad/donor_controls/layer17_audio_donor_controls_single_token.csv",
+  "n_raw_rows": 288,
+  "controls": [
+    "matched_swap",
+    "random_donor",
+    "same_emotion"
+  ],
+  "bootstrap": {
+    "unit": "actor cluster",
+    "seed": 20260915,
+    "samples": 10000,
+    "percentile_interval": [
+      0.025,
+      0.975
+    ]
+  },
+  "effect_definition": "donor_sign*(patched_target_margin-baseline_target_margin), donor_sign=+1 for happy and -1 for sad",
+  "interpretation": "Matched swap is the emotion-change reference; same-emotion and random donors test broad state replacement controls.",
+  "summary_rows": [
+    {
+      "control": "matched_swap",
+      "n_pairs": 96,
+      "n_actor_clusters": 24,
+      "mean_counterfactual_effect": 0.04555171728134155,
+      "sd_counterfactual_effect": 0.17233456221651117,
+      "ci95_low_normal": 0.011077624979104375,
+      "ci95_high_normal": 0.08002580958357873,
+      "ci95_low_actor_bootstrap": 0.008185048898061117,
+      "ci95_high_actor_bootstrap": 0.08617083231608073,
+      "median_counterfactual_effect": 0.033850669860839844,
+      "positive_ce_fraction": 0.625,
+      "mean_happy_donor_aligned_effect": 0.04939050475756327,
+      "mean_sad_donor_aligned_effect": 0.041712929805119835,
+      "happy_direction_fraction": 0.625,
+      "sad_direction_fraction": 0.6354166666666666,
+      "happy_donor_same_emotion_fraction": 0.0,
+      "sad_donor_same_emotion_fraction": 0.0,
+      "happy_donor_same_content_fraction": 1.0,
+      "sad_donor_same_content_fraction": 1.0,
+      "happy_donor_is_matched_counterpart_fraction": 1.0,
+      "sad_donor_is_matched_counterpart_fraction": 1.0
+    },
+    {
+      "control": "random_donor",
+      "n_pairs": 96,
+      "n_actor_clusters": 24,
+      "mean_counterfactual_effect": 0.03123752276102702,
+      "sd_counterfactual_effect": 0.17800604639378767,
+      "ci95_low_normal": -0.0043711026638954854,
+      "ci95_high_normal": 0.06684614818594953,
+      "ci95_low_actor_bootstrap": -0.00022552907466888428,
+      "ci95_high_actor_bootstrap": 0.06481784582138062,
+      "median_counterfactual_effect": 0.02688288688659668,
+      "positive_ce_fraction": 0.5625,
+      "mean_happy_donor_aligned_effect": 0.04017957051595052,
+      "mean_sad_donor_aligned_effect": 0.022295475006103516,
+      "happy_direction_fraction": 0.5729166666666666,
+      "sad_direction_fraction": 0.5520833333333334,
+      "happy_donor_same_emotion_fraction": 0.40625,
+      "sad_donor_same_emotion_fraction": 0.4479166666666667,
+      "happy_donor_same_content_fraction": 0.2604166666666667,
+      "sad_donor_same_content_fraction": 0.25,
+      "happy_donor_is_matched_counterpart_fraction": 0.0,
+      "sad_donor_is_matched_counterpart_fraction": 0.0
+    },
+    {
+      "control": "same_emotion",
+      "n_pairs": 96,
+      "n_actor_clusters": 24,
+      "mean_counterfactual_effect": 0.014178181687990824,
+      "sd_counterfactual_effect": 0.12221470020027601,
+      "ci95_low_normal": -0.010269850100904128,
+      "ci95_high_normal": 0.03862621347688577,
+      "ci95_low_actor_bootstrap": -0.012049670020739237,
+      "ci95_high_actor_bootstrap": 0.03909865518411001,
+      "median_counterfactual_effect": 0.022092580795288086,
+      "positive_ce_fraction": 0.5729166666666666,
+      "mean_happy_donor_aligned_effect": 0.01315152645111084,
+      "mean_sad_donor_aligned_effect": 0.01520483692487081,
+      "happy_direction_fraction": 0.53125,
+      "sad_direction_fraction": 0.5520833333333334,
+      "happy_donor_same_emotion_fraction": 1.0,
+      "sad_donor_same_emotion_fraction": 1.0,
+      "happy_donor_same_content_fraction": 1.0,
+      "sad_donor_same_content_fraction": 1.0,
+      "happy_donor_is_matched_counterpart_fraction": 0.0,
+      "sad_donor_is_matched_counterpart_fraction": 0.0
+    }
+  ]
+}

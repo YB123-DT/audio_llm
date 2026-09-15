@@ -11,7 +11,16 @@ from scripts.analyze_slam_omni_diagnostics import _conditioned_parallelism
 from scripts.analyze_decision_transfer import build_transfer_rows, summarize_transfer
 from scripts.analyze_activation_patching import build_mechanism_rows, summarize_patch_rows
 from scripts.analyze_persistence_patching import summarize_persistence_rows
+from scripts.analyze_tokenwise_activation_patching import (
+    compare_sequence_reconstruction,
+    reconstruct_sequence_effects,
+    summarize_tokenwise_rows,
+)
+from scripts.analyze_donor_controls import actor_cluster_bootstrap, summarize_control_rows
+from scripts.analyze_attention_head_patching import summarize_head_rows
+from scripts.run_donor_control_patching import build_donor_mapping, donor_aligned_effect
 from scripts.run_activation_patching import _counterfactual_margin_effects, _pair_indices, _patch_hook
+from scripts.run_tokenwise_activation_patching import _tokenwise_effects
 from scripts.run_persistence_patching import build_audio_restore_schedule, build_decision_clamp_schedule
 
 try:
@@ -39,6 +48,24 @@ class DiagnosticMetricTests(unittest.TestCase):
         self.assertAlmostEqual(effects["happy_effect_toward_sad"], 0.9)
         self.assertAlmostEqual(effects["sad_effect_toward_happy"], 0.9)
         self.assertAlmostEqual(effects["counterfactual_effect"], 0.9)
+
+    def test_tokenwise_effects_reconstruct_sequence_ce(self) -> None:
+        baseline_happy = np.asarray([[-2.0, -3.0], [-3.0, -4.0]])
+        baseline_sad = np.asarray([[-3.0, -2.0], [-2.0, -1.0]])
+        patched_happy = np.asarray([[-2.5, -2.5], [-4.5, -4.5]])
+        patched_sad = np.asarray([[-2.5, -2.5], [-4.5, -4.5]])
+        effects = _tokenwise_effects(baseline_happy, baseline_sad, patched_happy, patched_sad)
+        self.assertEqual(effects["counterfactual_effect"].shape, (2,))
+        self.assertAlmostEqual(float(effects["counterfactual_effect"].sum()), 2.0)
+        self.assertAlmostEqual(
+            float(effects["counterfactual_effect"].sum()),
+            0.5 * (
+                (baseline_happy[0].sum() - baseline_happy[1].sum())
+                - (patched_happy[0].sum() - patched_happy[1].sum())
+                + (patched_sad[0].sum() - patched_sad[1].sum())
+                - (baseline_sad[0].sum() - baseline_sad[1].sum())
+            ),
+        )
 
     def test_activation_patch_effect_and_mechanism_mapping(self) -> None:
         rows = []
@@ -106,6 +133,106 @@ class DiagnosticMetricTests(unittest.TestCase):
             build_audio_restore_schedule(17)
         with self.assertRaises(ValueError):
             build_decision_clamp_schedule(16)
+
+    def test_tokenwise_summary_reconstructs_sequence_effect(self) -> None:
+        rows = []
+        for token_position, effect in ((1, 0.25), (2, 0.75)):
+            rows.append(
+                {
+                    "pair_id": "p0",
+                    "layer_index": "17",
+                    "layer": "layer_17",
+                    "patch_kind": "audio_tokens",
+                    "token_position": str(token_position),
+                    "counterfactual_effect": str(effect),
+                    "error": "",
+                }
+            )
+        summaries = summarize_tokenwise_rows(rows)
+        self.assertEqual([row["token_position"] for row in summaries], [1, 2])
+        reconstruction = reconstruct_sequence_effects(rows)
+        self.assertAlmostEqual(reconstruction[0]["mean_sequence_counterfactual_effect"], 1.0)
+        sequence_rows = [
+            {
+                "pair_id": "p0",
+                "layer_index": "17",
+                "patch_kind": "audio_tokens",
+                "counterfactual_effect": "1.0",
+            }
+        ]
+        comparison = compare_sequence_reconstruction(rows, sequence_rows)
+        self.assertAlmostEqual(comparison[0]["max_abs_reconstruction_error"], 0.0)
+
+    def test_donor_controls_are_deterministic_and_emotion_oriented(self) -> None:
+        rows = []
+        for actor in ("01", "02"):
+            for emotion in ("happy", "sad"):
+                rows.append(
+                    {
+                        "pair_id": f"p_{actor}",
+                        "sample_id": f"p_{actor}_{emotion}",
+                        "actor": actor,
+                        "statement": "01",
+                        "repetition": "01",
+                        "intensity": "01",
+                        "emotion": emotion,
+                    }
+                )
+        pairs = _pair_indices(rows)
+        same = build_donor_mapping(rows, pairs, "same_emotion", seed=7)
+        self.assertEqual(same, build_donor_mapping(rows, pairs, "same_emotion", seed=7))
+        for target, donor in enumerate(same):
+            self.assertEqual(rows[target]["emotion"], rows[donor]["emotion"])
+            self.assertNotEqual(rows[target]["actor"], rows[donor]["actor"])
+        matched = build_donor_mapping(rows, pairs, "matched_swap", seed=7)
+        self.assertNotEqual(rows[0]["emotion"], rows[matched[0]]["emotion"])
+        self.assertAlmostEqual(donor_aligned_effect("happy", "sad", 1.0, 0.5), 0.5)
+        self.assertAlmostEqual(donor_aligned_effect("sad", "happy", -1.0, -0.5), 0.5)
+
+    def test_actor_cluster_bootstrap_and_control_summary(self) -> None:
+        rows = []
+        for actor, value in (("01", 1.0), ("01", 1.0), ("02", -1.0), ("02", -1.0)):
+            rows.append(
+                {
+                    "control": "matched_swap",
+                    "pair_id": f"p_{len(rows)}",
+                    "actor": actor,
+                    "counterfactual_effect": str(value),
+                    "happy_donor_aligned_effect": str(value),
+                    "sad_donor_aligned_effect": str(value),
+                    "happy_donor_same_emotion": "False",
+                    "sad_donor_same_emotion": "False",
+                    "happy_donor_same_content": "True",
+                    "sad_donor_same_content": "True",
+                    "happy_donor_is_matched_counterpart": "True",
+                    "sad_donor_is_matched_counterpart": "True",
+                    "error": "",
+                }
+            )
+        low, high = actor_cluster_bootstrap([1.0, 1.0, -1.0, -1.0], ["01", "01", "02", "02"], seed=1, samples=100)
+        self.assertLessEqual(low, 0.0)
+        self.assertGreaterEqual(high, 0.0)
+        summary = summarize_control_rows(rows, bootstrap_seed=1, bootstrap_samples=100)
+        self.assertEqual(summary[0]["n_actor_clusters"], 2)
+        self.assertAlmostEqual(summary[0]["mean_counterfactual_effect"], 0.0)
+
+    def test_attention_head_summary_keeps_head_identity(self) -> None:
+        rows = []
+        for head, value in ((0, 0.2), (1, -0.1)):
+            rows.append(
+                {
+                    "pair_id": f"p{head}",
+                    "actor": "01",
+                    "layer_index": "18",
+                    "head_index": str(head),
+                    "counterfactual_effect": str(value),
+                    "happy_effect_toward_sad": str(value),
+                    "sad_effect_toward_happy": str(value),
+                    "error": "",
+                }
+            )
+        summaries = summarize_head_rows(rows, bootstrap_seed=1, bootstrap_samples=20)
+        self.assertEqual([(row["layer_index"], row["head_index"]) for row in summaries], [(18, 0), (18, 1)])
 
     def test_persistence_summary_groups_restore_and_clamp_schedules(self) -> None:
         common = {

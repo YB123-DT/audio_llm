@@ -1,0 +1,3 @@
+layer_index,layer,patch_kind,token_position,n_pairs,mean_counterfactual_effect,sd_counterfactual_effect,ci95_low_counterfactual_effect,ci95_high_counterfactual_effect,median_counterfactual_effect,positive_ce_fraction
+17,layer_17,audio_tokens,1,96,0.05816018581390381,0.20428900450260912,0.017293873758014063,0.09902649786979356,0.05012941360473633,0.625
+17,layer_17,audio_tokens,2,96,0.0026592363913853965,0.14495458797345648,-0.02633772034879266,0.031656193131563454,0.020115137100219727,0.5520833333333334

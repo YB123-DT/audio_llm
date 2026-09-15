@@ -1,0 +1,28 @@
+{
+  "manifest": "artifacts/ravdess_happy_sad_intensity01.csv",
+  "n_samples": 192,
+  "n_pairs": 96,
+  "condition_id": "upper_prompt__lower_spaced",
+  "happy_token_ids": [
+    6247
+  ],
+  "sad_token_ids": [
+    12421
+  ],
+  "layer_index": 17,
+  "controls": [
+    "matched_swap",
+    "same_emotion",
+    "random_donor"
+  ],
+  "patch_site": "post_decoder_block_output",
+  "audio_start": 29,
+  "audio_length": 300,
+  "prefix_length": 331,
+  "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+  "model_parameters_frozen": true,
+  "self_patch_max_abs_likelihood_error": 2.86102294921875e-06,
+  "self_patch_tolerance": 0.001,
+  "effect_definition": "donor_sign*(patched_target_margin-baseline_target_margin), donor_sign=+1 for happy and -1 for sad",
+  "seed": 1234
+}

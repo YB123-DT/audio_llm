@@ -1,6 +1,6 @@
 # RAVDESS happy/sad frozen SLAM-Omni diagnosis
 
-日期：2026-09-14（阶段七于 2026-09-15 完成）
+日期：2026-09-14（阶段十二于 2026-09-15 完成）
 
 模型：SLAM-Omni-0.5B 官方英语单轮 checkpoint
 
@@ -243,6 +243,84 @@ Audio effect 没有呈现“保留时间越长，CE 单调越大”的轨迹。l
 
 Decision position 的单次 patch 以及持续 clamp 都没有达到描述性 CI95 下界大于 0；延长 clamp 只把 layer17 的负向/不稳定效应推近 0，没有出现“single patch≈0、persistent clamp>0”。因此本轮没有证据表明 donor decision state 在后续 layers 中被持续整合成可用的 happy/sad likelihood。结合阶段六，当前更具体的判断是：**layer17 audio-token swap 有局部、可穿过一两个后续 block 的 counterfactual influence，但它的时间轨迹非单调；decision-token 的直接持续替换仍不能复现 donor-aligned readout。** 这仍是固定 prompt/verbalizer、单 seed、post-block state replacement 下的干预结果，不能直接等同于自然 routing。
 
+## 阶段八：单 token 复现与两 token CE 分解
+
+本轮先用 `upper_prompt__lower_spaced` 重复 layer17，再把原来的 `upper_prompt__upper_spaced` 两 token verbalizer 拆成 token 位置分别统计。这样可以排除“候选序列第二个 token 的条件概率变化”把第一个 decision token 的效应混在一起的解释。
+
+- 单 token 条件的 verbalizer 是 ` happy` / ` sad`，token IDs 分别为 `[6247]` / `[12421]`；audio-token 与 decision-token 两组各覆盖 96 对，均为 0 errors。
+- 单 token layer17 audio-token patch 的 CE 为 `+0.0456`，95% CI `[+0.0111,+0.0800]`；decision-token patch 为 `−0.0132`，CI `[−0.0819,+0.0556]`。因此在单 token 读出下，audio patch 仍是正向，直接 decision patch 仍未达到描述性正向标准。
+- 两 token 条件的 tokenwise 结果中，audio-token patch 的第一个 candidate token CE 为 `+0.0582`，CI `[+0.0173,+0.0990]`；第二个 token 为 `+0.0027`，CI `[−0.0263,+0.0317]`。decision-token patch 的第一个 token 为 `−0.0617`，CI `[−0.1564,+0.0329]`；第二个 token 为 `+0.0027`，CI `[−0.0045,+0.0098]`。
+- 将两个 token 的 CE 相加，audio sequence-level CE 为 `+0.0608`，decision sequence-level CE 为 `−0.0590`；与阶段六逐 pair 的 sequence CE 最大重建误差分别为 `4.3×10⁻⁶` 与 `4.8×10⁻⁶`。因此旧的两 token 结果几乎完全由第一个 candidate token 决定，第二个 token 没有形成独立的支持性效应。
+
+逐 token 原始结果见 [layer17_audio_tokens_tokenwise.csv](./single_token_runs/layer17_audio_tokens_tokenwise.csv) 和 [layer17_decision_token_tokenwise.csv](./single_token_runs/layer17_decision_token_tokenwise.csv)；汇总见 [audio tokenwise summary](./single_token_runs/tokenwise_analysis/audio/tokenwise_activation_patch_summary.csv)、[decision tokenwise summary](./single_token_runs/tokenwise_analysis/decision/tokenwise_activation_patch_summary.csv) 与 [audio sequence reconstruction](./single_token_runs/tokenwise_analysis/audio/tokenwise_activation_patch_sequence_comparison.csv)。单 token 复现结果见 [layer17_audio_tokens_single_token.csv](./single_token_runs/layer17_audio_tokens_single_token.csv)、[layer17_decision_token_single_token.csv](./single_token_runs/layer17_decision_token_single_token.csv) 及各自的 `activation_patch_summary.csv`。
+
+这一步把优先级 1–2 的歧义压缩为一个更具体的问题：layer17 audio state 的影响主要落在首个 decision candidate 上，但它是否通过自然的 audio→decision routing 产生，仍需单 token persistence、decision clamp 和 donor controls 进一步检验。
+
+## 阶段九：单 token persistence 与 decision clamp
+
+为把持续时间实验放到首个 candidate token 的读出上，本轮在 `upper_prompt__lower_spaced`（` happy` / ` sad`，token IDs `[6247]` / `[12421]`）下只保留两个 audio schedule：`audio_restore_at_18` 与 `audio_no_restore`；decision 侧保留 `decision_clamp_to_17` 到 `decision_clamp_to_23` 七个 schedule。9 个 schedule 共 864 行，均为 96 对且 `error` 为空；同一 pair 在不同 schedule 的四个 baseline candidate scores 完全一致，self-patch 最大绝对 likelihood 误差为 `1.14×10⁻⁵`（容差 `10⁻³`）。
+
+| 条件 | mean CE（95% CI） | 双向一致 |
+|---|---:|---:|
+| `audio_restore_at_18` | +0.010 [−0.004, +0.023] | 58.3% |
+| `audio_no_restore` | +0.046 [+0.011, +0.080] | 61.5% |
+| `decision_clamp_to_17` | −0.013 [−0.082, +0.056] | 45.8% |
+| `decision_clamp_to_18` | −0.004 [−0.072, +0.065] | 47.9% |
+| `decision_clamp_to_19` | +0.007 [−0.063, +0.077] | 49.0% |
+| `decision_clamp_to_20` | +0.006 [−0.062, +0.075] | 49.0% |
+| `decision_clamp_to_21` | +0.017 [−0.052, +0.085] | 52.1% |
+| `decision_clamp_to_22` | +0.020 [−0.057, +0.098] | 49.0% |
+| `decision_clamp_to_23` | +0.033 [−0.046, +0.111] | 49.0% |
+
+单 token 下 no-restore 完整复现 layer17 的正向 audio patch；在 layer18 post-output 恢复 target audio 后，效应降到接近 0，CI 跨过 0。这与“首个 candidate token 的 donor evidence 需要继续由后续计算承接”相一致，但不能区分 layer18 内的 decision 写入、其他 token 的分布式计算或 restore state 的 off-manifold 影响。decision clamp 从单次 layer17 的负向值逐步向正方向移动，但所有 CI95 都跨过 0，仍没有“persistent clamp 显著有效”的证据。
+
+原始结果见 [single-token persistence rows](./single_token_persistence_runs/persistence_patch.csv)，汇总见 [single-token persistence summary](./single_token_persistence_runs/analysis/persistence_patch_summary.csv)、[single-token persistence plot](./single_token_persistence_runs/analysis/persistence_patch_summary.png) 和各 schedule 的运行 JSON。它是首个 candidate token 读出上的 persistence 对照，不能替代多 verbalizer、多 seed 的复核。
+
+## 阶段十：actor-cluster bootstrap 与 donor controls
+
+为检查 layer17 的正向 CE 是否只是任意 donor state replacement，本轮在同一单 token 条件下固定 `layer_17/audio_tokens`，比较三个 donor mapping：
+
+- `matched_swap`：严格 matched pair 的相反 emotion donor，是前一阶段 audio CE 的复现基线。
+- `same_emotion`：保持 emotion、statement、repetition、intensity，换成另一 actor 的 donor；因此每个 target 都是同 emotion、跨 actor、同内容条件。
+- `random_donor`：从除自身外的全部 191 条音频中按固定 seed 随机选择 donor，记录 donor emotion 与内容关系。
+
+每个 control 都有 96 个 pair-level CE。置信区间同时报告普通 pair-level 正态近似和以 actor 为重采样单位的 bootstrap（24 个 actor cluster，10,000 次，seed=`20260915`）：
+
+| control | mean CE | normal 95% CI | actor bootstrap 95% CI | 双向方向（happy / sad） |
+|---|---:|---:|---:|---:|
+| `matched_swap` | +0.0456 | [+0.0111,+0.0800] | [+0.0082,+0.0862] | 62.5% / 63.5% |
+| `same_emotion` | +0.0142 | [−0.0103,+0.0386] | [−0.0120,+0.0391] | 53.1% / 55.2% |
+| `random_donor` | +0.0312 | [−0.0044,+0.0668] | [−0.0002,+0.0648] | 57.3% / 55.2% |
+
+`matched_swap` 在 actor-cluster bootstrap 下仍保持正向区间；`same_emotion` 和 `random_donor` 的 bootstrap CI 都跨过 0。same-emotion 的 happy/sad donor same-emotion 比例均为 100%，same-content 比例均为 100%；random donor 的 same-emotion 比例为 40.6%/44.8%，same-content 比例为 26.0%/25.0%。matched control 与既有单 token layer17 audio patch 逐 pair 完全一致（最大差 0），说明 control runner 没有改变原始 effect 定义或 target/donor 方向。
+
+该结果支持一个有限但更具体的判断：layer17 的 donor-aligned effect 在严格 emotion swap 下比同 emotion replacement 更稳定，且在 actor-cluster 重采样后仍为正；它不再像单纯的 broad state replacement。random donor 的均值仍为正，说明其中混有状态/内容变化，因而不能用它证明 effect 只由 emotion 引起。mapping 及原始 rows 见 [donor mapping](./donor_controls/layer17_audio_donor_controls_single_token_mapping.csv) 和 [donor-control rows](./donor_controls/layer17_audio_donor_controls_single_token.csv)，统计见 [donor control summary](./donor_controls/analysis/donor_control_summary.csv)、[JSON](./donor_controls/analysis/donor_control_summary.json) 与 [bootstrap plot](./donor_controls/analysis/donor_control_summary.png)。
+
+## 阶段十一：attention/value path map
+
+在 donor controls 通过后，先做不改变 hidden state 的描述性 path tracing。单 token `upper_prompt__lower_spaced` 下，对 192 条样本的 Qwen 24 层×14 头记录 decision position `330` 指向 300 个 audio positions 的 attention mass，并记录每个 head 的 attention-weighted value contribution L2 norm。为确保能取得权重，运行时将 attention implementation 固定为 eager；所有参数仍冻结。
+
+后续层的高平均 attention×value flow 主要出现在 L18H4、L20H12、L21H5、L22H3/H13、L23H9 等 head；但 pair-level sad−happy delta 与 layer17 audio CE 的相关性没有形成单一集中 head，最大绝对相关性约 0.51（L22H10，相关性为负）。这些是候选路径指标，不是因果效应。完整 336 个 layer/head 条目、pair delta 数组和运行元数据见 [attention/value summary](./attention_value_trace/attention_value_path_summary.csv)、[arrays](./attention_value_trace/attention_value_path_summary.npz) 和 [run JSON](./attention_value_trace/attention_value_path_summary_run.json)。
+
+## 阶段十二：目标化 attention-head causal patch
+
+为了检验上述候选 head 是否真的把 layer17 emotion evidence 带到首个 decision candidate，进一步对 10 个预注册候选（后续层中高 attention×value flow 或高 pair-level value delta）做 head-level donor patch。干预发生在 `pre_o_proj_decision_head`：只替换该 head 在 decision position 的 pre-`o_proj` attention vector，其余 head、audio positions、prompt 和候选 token 都保持 target 状态。每个 head 覆盖 96 个 matched pairs，并先做 target self-patch no-op 检查。
+
+| head | mean CE | actor-bootstrap 95% CI | 双向方向（happy / sad） |
+|---|---:|---:|---:|
+| L18H1 | −0.0042 | [−0.0150,+0.0055] | 51.0% / 51.0% |
+| L18H4 | +0.0024 | [−0.0072,+0.0114] | 54.2% / 52.1% |
+| L20H12 | −0.0007 | [−0.0069,+0.0052] | 54.2% / 55.2% |
+| L21H5 | +0.0087 | [−0.0042,+0.0211] | 55.2% / 51.1% |
+| L22H0 | +0.0015 | [−0.0028,+0.0055] | 56.3% / 55.2% |
+| L22H3 | +0.0034 | [−0.0083,+0.0161] | 52.1% / 52.1% |
+| L22H10 | +0.0008 | [−0.0001,+0.0019] | 57.3% / 56.3% |
+| L22H11 | +0.0003 | [−0.0031,+0.0035] | 53.1% / 51.1% |
+| L22H13 | +0.0004 | [−0.0162,+0.0142] | 54.2% / 54.2% |
+| L23H9 | +0.0089 | [−0.0060,+0.0229] | 60.4% / 60.4% |
+
+10 个 head 共 960 行，`error` 为空，self-patch 检查均未超过 `10⁻³`。所有 actor-bootstrap CI 都跨 0；因此没有一个候选 head 单独产生稳定的 donor-aligned CE。这个 null result 不能证明没有 audio→decision routing：layer17 effect 可能分散在多个 head/value 路径，或者把 donor 的 pre-`o_proj` head state 直接注入 target 造成了 off-manifold state。目标化原始 rows 见 [attention-head patch rows](./attention_head_patching/layer18_23_selected_heads.csv)，汇总见 [attention-head summary](./attention_head_patching/analysis/attention_head_patch_summary.csv)、[JSON](./attention_head_patching/analysis/attention_head_patch_summary.json) 与 [causal plot](./attention_head_patching/analysis/attention_head_patch_summary.png)。
+
 ## 当前结论
 
 1. **信息可读出。** Emotion 在 Whisper 后段、projector 以及 LLM audio-token mean 中都能被线性 probe 读出；projector 在本轮两个 split 上分别达到 95.8% 和 91.1%。
@@ -254,8 +332,13 @@ Decision position 的单次 patch 以及持续 clamp 都没有达到描述性 CI
 
 7. **activation patching 给出局部因果线索。** 在固定 `upper_prompt__upper_spaced`、seed=1234 的 12 个条件中，只有 `layer_17/audio_tokens` 的 CE 通过描述性 CI95 下界 >0（+0.061，[+0.020,+0.102]）；同层 `decision_token` 未通过，`layer_23/audio_tokens` 精确为 0。结果支持“layer 17 的 audio state 能影响后续 margin，但直接 decision-state 替换不稳定”的局部现象，不能单独证明自然 routing failure 或 downstream readout failure。
 8. **影响的持续时间不是单调累积。** 在 layer17 audio patch 后于 layer18/19 恢复 target state，CE 仍为正（+0.028/+0.036）；layer20/21 的区间跨 0，layer22/23 与 no-restore 回到约 +0.061。decision clamp 从 layer17 延长到 layer23 没有产生显著正向 CE。因而当前证据是“audio counterfactual influence 可短程保留但时间曲线非单调”，不是“持续 clamp 会逐层放大 decision evidence”。
+9. **旧两 token CE 主要来自第一个 candidate token。** 单 token verbalizer 复现了 layer17 audio-token 的正向 CE（+0.0456，[+0.0111,+0.0800]），而 decision-token CE 仍跨过 0。对两 token 条件逐位置分解后，audio patch 的 token 1 CE 为 +0.0582、token 2 为 +0.0027；decision patch 的 token 1 为 −0.0617、token 2 为 +0.0027。两位置相加可在约 $5×10^{-6}$ 内重建旧 sequence CE。这说明后续 persistence 与 decision clamp 应优先解释首个候选标签位置的 evidence，而不能把旧 sequence effect 归因于第二 token dynamics。
+10. **单 token 的持续性更短，decision clamp 仍未形成稳定读出。** no-restore 的 layer17 audio CE 为 +0.0456（CI [+0.0111,+0.0800]），layer18 恢复 target audio 后降为 +0.0097（CI 跨 0）；decision clamp 从 −0.0132 向 +0.0326 移动，但所有 CI95 都跨 0。当前最保守的解释是 layer17 audio state 对首个标签 token 有局部、可复现的影响，却尚未证明后续 decision state 自然承接了该证据。
+11. **layer17 effect 对 donor emotion 有一定特异性。** 在单 token layer17 audio patch 下，matched emotion swap 的 actor-cluster bootstrap CI 为 [+0.0082,+0.0862]；same-emotion、同内容跨 actor donor 的 CI 为 [−0.0120,+0.0391]，random donor 的 CI 为 [−0.0002,+0.0648]。因此 broad state replacement 不能解释全部现象，但 random donor 的非零均值仍要求后续控制进一步拆分 emotion、speaker 与 content。
+12. **描述性 path map 没有显示单一集中 head。** decision→audio attention mass 与 value norm 在多层多头都较高；pair-level delta 与 layer17 CE 的最大绝对相关性约 0.51，不能把相关 head 当作机制。
+13. **目标化 head patch 未得到单 head 的稳定 causal CE。** 10 个后续候选 head 的 actor-bootstrap CI 全部跨 0，最大均值约 +0.009。当前结果更符合分布式 head/value routing 或 donor head state 的 off-manifold 风险；是否存在组合式路径，需要在控制多重比较后再做组合 patch 或 value ablation。
 
-这是一轮冻结、二分类、固定 intensity 的诊断。forced-choice 结果只说明当前 checkpoint、手工重建配置、prompt/verbalizer 和自由音频输入下没有超过机会水平，不能写成“decoder 已被证明完全不使用 emotion”；instruction-following 能力不足或 checkpoint/config 加载问题仍需单独排除。activation patching 提供的是给定层、位置和 verbalizer 下的干预性因果效应，不等同于自然 routing 已被证明。RAVDESS 的 actor/acoustic 属性也可能和 emotion 混杂；本轮 audio encoder 使用固定 30 秒 Whisper 输入并做全时间 mean pooling，也可能削弱 token-level 的情绪方向。下一轮应把 layer17 的局部 audio effect 与 audio→decision 的 attention/value tracing、audio-token ablation 及多 seed/verbalizer 复核结合起来，解释非单调 persistence 曲线是否来自分布式 token computation、目标 state restore 的 off-manifold 差异，或真正的 routing dynamics。
+这是一轮冻结、二分类、固定 intensity 的诊断。forced-choice 结果只说明当前 checkpoint、手工重建配置、prompt/verbalizer 和自由音频输入下没有超过机会水平，不能写成“decoder 已被证明完全不使用 emotion”；instruction-following 能力不足或 checkpoint/config 加载问题仍需单独排除。activation patching 提供的是给定层、位置和 verbalizer 下的干预性因果效应，不等同于自然 routing 已被证明。RAVDESS 的 actor/acoustic 属性也可能和 emotion 混杂；本轮 audio encoder 使用固定 30 秒 Whisper 输入并做全时间 mean pooling，也可能削弱 token-level 的情绪方向。已有 path map 与单 head patch 没有定位到单一机制；下一轮应加入组合 head/value patch、audio-token ablation、多 seed/verbalizer 和预注册的多重比较校正，解释非单调 persistence 曲线是否来自分布式 token computation、目标 state restore 的 off-manifold 差异，或真正的 routing dynamics。
 
 ## 可复现实验入口
 
@@ -271,6 +354,13 @@ Decision position 的单次 patch 以及持续 clamp 都没有达到描述性 CI
 - [analyze_activation_patching.py](../../scripts/analyze_activation_patching.py)
 - [run_persistence_patching.py](../../scripts/run_persistence_patching.py)
 - [analyze_persistence_patching.py](../../scripts/analyze_persistence_patching.py)
+- [run_tokenwise_activation_patching.py](../../scripts/run_tokenwise_activation_patching.py)
+- [analyze_tokenwise_activation_patching.py](../../scripts/analyze_tokenwise_activation_patching.py)
+- [run_donor_control_patching.py](../../scripts/run_donor_control_patching.py)
+- [analyze_donor_controls.py](../../scripts/analyze_donor_controls.py)
+- [run_attention_value_tracing.py](../../scripts/run_attention_value_tracing.py)
+- [run_attention_head_patching.py](../../scripts/run_attention_head_patching.py)
+- [analyze_attention_head_patching.py](../../scripts/analyze_attention_head_patching.py)
 
 forced-choice 运行阶段为 `slam_omni_diagnostics.py forced-choice`，默认执行 2×2 prompt/verbalizer 矩阵；候选标签按完整 token sequence 做 teacher-forced likelihood，不能用单 token argmax 替代。activation patching 的单条件入口如下（完整网格按 layer×patch-kind 拆分执行）：
 
@@ -319,6 +409,57 @@ python scripts/run_persistence_patching.py \
 python scripts/analyze_persistence_patching.py \
   --input-csv reports/2026-09-14-ravdess-happy-sad/persistence_patch.csv \
   --output-dir reports/2026-09-14-ravdess-happy-sad
+```
+
+两 token CE 分解与 sequence-level 重建检查：
+
+```bash
+python scripts/run_tokenwise_activation_patching.py \
+  --manifest artifacts/ravdess_happy_sad_intensity01.csv \
+  --ravdess-root /data2/yb/paper/RAVDESS \
+  --slam-llm-root /data2/yb/paper/SLAM-LLM \
+  --qwen-path /data2/yb/paper_runtime_models/Qwen2-0.5B \
+  --whisper-path /data2/yb/paper_runtime_models/whisper/small.pt \
+  --checkpoint /data2/yb/paper/SLAM-Omni-0.5B/model.pt \
+  --output-csv /tmp/layer17_audio_tokens_tokenwise.csv \
+  --condition upper_prompt__upper_spaced --layer 17 \
+  --patch-kind audio_tokens --batch-size 1 --seed 1234 --device cuda:0
+
+python scripts/analyze_tokenwise_activation_patching.py \
+  --input-csv /tmp/layer17_audio_tokens_tokenwise.csv \
+  --sequence-csv reports/2026-09-14-ravdess-happy-sad/activation_patch.csv \
+  --output-dir /tmp/tokenwise_analysis
+```
+
+attention/value path map 与目标化 head patch：
+
+```bash
+python scripts/run_attention_value_tracing.py \
+  --manifest artifacts/ravdess_happy_sad_intensity01.csv \
+  --ravdess-root /data2/yb/paper/RAVDESS \
+  --slam-llm-root /data2/yb/paper/SLAM-LLM \
+  --qwen-path /data2/yb/paper_runtime_models/Qwen2-0.5B \
+  --whisper-path /data2/yb/paper_runtime_models/whisper/small.pt \
+  --checkpoint /data2/yb/paper/SLAM-Omni-0.5B/model.pt \
+  --patch-csv /tmp/layer17_audio_tokens_single_token.csv \
+  --output-csv /tmp/attention_value_path_summary.csv \
+  --condition upper_prompt__lower_spaced --seed 1234 --device cuda:0
+
+python scripts/run_attention_head_patching.py \
+  --manifest artifacts/ravdess_happy_sad_intensity01.csv \
+  --ravdess-root /data2/yb/paper/RAVDESS \
+  --slam-llm-root /data2/yb/paper/SLAM-LLM \
+  --qwen-path /data2/yb/paper_runtime_models/Qwen2-0.5B \
+  --whisper-path /data2/yb/paper_runtime_models/whisper/small.pt \
+  --checkpoint /data2/yb/paper/SLAM-Omni-0.5B/model.pt \
+  --output-csv /tmp/attention_head_patch.csv \
+  --condition upper_prompt__lower_spaced \
+  --head 18:1 18:4 20:12 21:5 22:0 22:3 22:13 23:9 22:10 22:11 \
+  --batch-size 1 --seed 1234 --device cuda:0
+
+python scripts/analyze_attention_head_patching.py \
+  --input-csv /tmp/attention_head_patch.csv \
+  --output-dir /tmp/attention_head_analysis
 ```
 
 probe transfer 汇总命令为：

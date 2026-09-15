@@ -1,0 +1,61 @@
+{
+  "source": "reports/2026-09-14-ravdess-happy-sad/single_token_runs/layer17_decision_token_tokenwise.csv",
+  "n_raw_rows": 192,
+  "n_summary_rows": 2,
+  "token_positions": [
+    1,
+    2
+  ],
+  "sequence_csv": "reports/2026-09-14-ravdess-happy-sad/activation_patch.csv",
+  "effect_definition": "per-token CE=0.5*((baseline_happy_margin-patched_happy_target_margin)+(patched_sad_target_margin-baseline_sad_margin)); summing positions reconstructs sequence CE",
+  "ci95_definition": "normal approximation over pair-level effects within each token position",
+  "token_summaries": [
+    {
+      "layer_index": 17,
+      "layer": "layer_17",
+      "patch_kind": "decision_token",
+      "token_position": 1,
+      "n_pairs": 96,
+      "mean_counterfactual_effect": -0.06171523531277975,
+      "sd_counterfactual_effect": 0.473121538591904,
+      "ci95_low_counterfactual_effect": -0.15635925437555068,
+      "ci95_high_counterfactual_effect": 0.032928783749991176,
+      "median_counterfactual_effect": -0.060796260833740234,
+      "positive_ce_fraction": 0.4479166666666667
+    },
+    {
+      "layer_index": 17,
+      "layer": "layer_17",
+      "patch_kind": "decision_token",
+      "token_position": 2,
+      "n_pairs": 96,
+      "mean_counterfactual_effect": 0.002686570088068644,
+      "sd_counterfactual_effect": 0.03579491488640247,
+      "ci95_low_counterfactual_effect": -0.004473904188671269,
+      "ci95_high_counterfactual_effect": 0.009847044364808556,
+      "median_counterfactual_effect": 0.0057010650634765625,
+      "positive_ce_fraction": 0.59375
+    }
+  ],
+  "sequence_reconstruction": [
+    {
+      "layer_index": 17,
+      "layer": "layer_17",
+      "patch_kind": "decision_token",
+      "n_pairs": 96,
+      "mean_sequence_counterfactual_effect": -0.0590286652247111,
+      "sd_sequence_counterfactual_effect": 0.48442995395667626,
+      "ci95_low_sequence_counterfactual_effect": -0.15593483849533857,
+      "ci95_high_sequence_counterfactual_effect": 0.03787750804591638
+    }
+  ],
+  "sequence_comparison": [
+    {
+      "layer_index": 17,
+      "patch_kind": "decision_token",
+      "n_pairs_compared": 96,
+      "max_abs_reconstruction_error": 4.76837158203125e-06,
+      "mean_abs_reconstruction_error": 1.4702479044596355e-06
+    }
+  ]
+}

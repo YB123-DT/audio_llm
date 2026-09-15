@@ -1,0 +1,27 @@
+{
+  "manifest": "artifacts/ravdess_happy_sad_intensity01.csv",
+  "n_samples": 192,
+  "n_pairs": 96,
+  "condition_id": "upper_prompt__lower_spaced",
+  "happy_token_ids": [
+    6247
+  ],
+  "sad_token_ids": [
+    12421
+  ],
+  "layer_indices": [
+    17
+  ],
+  "patch_kinds": [
+    "decision_token"
+  ],
+  "patch_site": "post_decoder_block_output",
+  "audio_start": 29,
+  "audio_length": 300,
+  "prefix_length": 331,
+  "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+  "model_parameters_frozen": true,
+  "self_patch_max_abs_likelihood_error": 7.62939453125e-06,
+  "self_patch_tolerance": 0.001,
+  "seed": 1234
+}

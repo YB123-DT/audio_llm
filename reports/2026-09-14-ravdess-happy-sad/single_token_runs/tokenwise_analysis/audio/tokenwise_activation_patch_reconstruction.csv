@@ -1,0 +1,2 @@
+layer_index,layer,patch_kind,n_pairs,mean_sequence_counterfactual_effect,sd_sequence_counterfactual_effect,ci95_low_sequence_counterfactual_effect,ci95_high_sequence_counterfactual_effect
+17,layer_17,audio_tokens,96,0.06081942220528921,0.20617512162441146,0.01957580814501015,0.10206303626556826
