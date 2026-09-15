@@ -10,7 +10,9 @@ from scripts.analyze_forced_choice import _roc_auc
 from scripts.analyze_slam_omni_diagnostics import _conditioned_parallelism
 from scripts.analyze_decision_transfer import build_transfer_rows, summarize_transfer
 from scripts.analyze_activation_patching import build_mechanism_rows, summarize_patch_rows
+from scripts.analyze_persistence_patching import summarize_persistence_rows
 from scripts.run_activation_patching import _counterfactual_margin_effects, _pair_indices, _patch_hook
+from scripts.run_persistence_patching import build_audio_restore_schedule, build_decision_clamp_schedule
 
 try:
     import torch as torch_lib
@@ -81,6 +83,62 @@ class DiagnosticMetricTests(unittest.TestCase):
         self.assertTrue(torch_lib.equal(patched[0][0, 0], torch_lib.zeros(3)))
         self.assertTrue(torch_lib.equal(patched[0][0, 1:3], donor[0]))
         self.assertEqual(patched[1], "aux")
+
+    def test_persistence_schedule_semantics(self) -> None:
+        self.assertEqual(
+            build_audio_restore_schedule(18),
+            ((17, "audio_tokens", "donor"), (18, "audio_tokens", "target")),
+        )
+        self.assertEqual(
+            build_audio_restore_schedule(None),
+            ((17, "audio_tokens", "donor"),),
+        )
+        self.assertEqual(
+            build_decision_clamp_schedule(20),
+            (
+                (17, "decision_token", "donor"),
+                (18, "decision_token", "donor"),
+                (19, "decision_token", "donor"),
+                (20, "decision_token", "donor"),
+            ),
+        )
+        with self.assertRaises(ValueError):
+            build_audio_restore_schedule(17)
+        with self.assertRaises(ValueError):
+            build_decision_clamp_schedule(16)
+
+    def test_persistence_summary_groups_restore_and_clamp_schedules(self) -> None:
+        common = {
+            "pair_id": "p0",
+            "baseline_happy_margin": "1.0",
+            "baseline_sad_margin": "-1.0",
+            "patched_happy_target_margin": "0.5",
+            "patched_sad_target_margin": "-0.5",
+            "error": "",
+        }
+        rows = [
+            {
+                **common,
+                "experiment_type": "audio_restore",
+                "schedule_id": "audio_no_restore",
+                "patch_kind": "audio_tokens",
+                "restore_layer": "",
+                "clamp_end_layer": "",
+            },
+            {
+                **common,
+                "experiment_type": "decision_clamp",
+                "schedule_id": "decision_clamp_to_20",
+                "patch_kind": "decision_token",
+                "restore_layer": "",
+                "clamp_end_layer": "20",
+            },
+        ]
+        summaries = summarize_persistence_rows(rows)
+        self.assertEqual([row["schedule_id"] for row in summaries], ["audio_no_restore", "decision_clamp_to_20"])
+        self.assertAlmostEqual(summaries[0]["mean_counterfactual_effect"], 0.5)
+        self.assertEqual(summaries[0]["schedule_order"], 24.0)
+        self.assertEqual(summaries[1]["schedule_order"], 20.0)
     def test_decision_transfer_reports_probe_gap_and_layer_step(self) -> None:
         rows = []
         for family, layer_values in (

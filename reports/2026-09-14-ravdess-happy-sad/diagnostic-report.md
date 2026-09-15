@@ -1,6 +1,6 @@
 # RAVDESS happy/sad frozen SLAM-Omni diagnosis
 
-日期：2026-09-14
+日期：2026-09-14（阶段七于 2026-09-15 完成）
 
 模型：SLAM-Omni-0.5B 官方英语单轮 checkpoint
 
@@ -206,6 +206,43 @@ $$
 
 因此，这一轮没有得到“所有层都存在 routing failure”或“decoder readout 已被证明可用”的结论。最具体的信号是 `layer_17` audio-token state 的 donor-aligned causal influence，而直接替换同层 decision state 没有稳定地产生相同方向；这与分布式 token computation 或 decision patch 的 off-manifold 风险相一致。该解释仍受单一 prompt/verbalizer、固定 30 秒音频边界和描述性 CI 限制，下一步应在更多 verbalizer/seed、audio-token ablation 和 value/activation tracing 上复核。
 
+## 阶段七：layer17 evidence 的持续时间
+
+本轮直接检验 `layer_17` 的干预性 audio evidence 是否需要经过后续 decoder blocks 才影响 forced-choice margin，并对 decision position 做对称的持续 clamp。
+
+- **Audio restore schedule**：在 `layer_17` 的 post-block output 将 target 的 300 个 audio tokens 替换为 matched donor；在 `layer_18`、…、`layer_23` 之一再替换回该 target 在独立、无干预 forward 中的 audio state。`audio_no_restore` 只做 layer17 的初始 patch，让后续 blocks 自然演化。因而表中的 `restore_layer=24` 只表示 no-restore 作图位置，不是模型层。
+- **Decision clamp schedule**：在 `layer_17` 到指定 end layer 的每个 post-block output，把 target 的 decision position 替换为 donor 在同一层捕获的 state；`decision_clamp_to_17` 是单次 patch，对应后续层不再 clamp。
+- 所有 schedule 使用 `upper_prompt__upper_spaced`、` HAPPY`/` SAD` 两个 token、同一 96 个 matched pairs、`seed=1234`、`batch-size=1`，模型参数冻结。每个 schedule 独立进程运行，baseline candidate scores 在 14 个 schedule 间最大绝对差为 0。
+- 14 个 schedule 共 1,344 行，均覆盖 96 对且 `error` 为空；self-patch 最大绝对 likelihood 误差为 $1.91\times10^{-5}$，容差为 $10^{-3}$。
+
+逐 schedule 原始分数见 [persistence_patch.csv](./persistence_patch.csv)，每个独立进程的 schedule、self-patch 和一致性检查见总运行记录 [persistence_patch_run.json](./persistence_patch_run.json)。汇总见 [persistence_patch_summary.csv](./persistence_patch_summary.csv)、[persistence_patch_summary.json](./persistence_patch_summary.json)，曲线见 [persistence_patch_summary.png](./persistence_patch_summary.png)。CE 和 CI 的定义与阶段六相同；CI 是 96 个 pair-level effects 的描述性正态近似区间，未做多重比较校正。
+
+| Audio restore 条件 | restore layer | mean CE（95% CI） | 双向一致 |
+|---|---:|---:|---:|
+| `audio_restore_at_18` | 18 | +0.028 [+0.010, +0.047] | 59.4% |
+| `audio_restore_at_19` | 19 | +0.036 [+0.013, +0.058] | 58.3% |
+| `audio_restore_at_20` | 20 | +0.019 [−0.008, +0.047] | 52.1% |
+| `audio_restore_at_21` | 21 | +0.028 [−0.009, +0.065] | 56.3% |
+| `audio_restore_at_22` | 22 | +0.061 [+0.021, +0.102] | 61.5% |
+| `audio_restore_at_23` | 23 | +0.061 [+0.020, +0.102] | 59.4% |
+| `audio_no_restore` | — | +0.061 [+0.020, +0.102] | 59.4% |
+
+Audio effect 没有呈现“保留时间越长，CE 单调越大”的轨迹。layer17 的 donor-aligned effect 在 layer18/19 restore 后仍保留一部分；layer20/21 的区间跨过 0；layer22/23 和 no-restore 又回到约 +0.061。`audio_restore_at_23` 与 no-restore 精确相同，因为在最后一个 decoder block 的 output 之后再改 audio positions 已没有后续层影响 decision logits；这也是一个边界控制。该结果支持“layer17 audio state 的影响可以穿过至少一个后续 block”，但不支持一个简单的持续时长阈值或累积整合叙事。
+
+这里的 restore 点都位于对应 block 的 post-output。因而 layer18 restore 后仍为正，可能表示 layer17 donor 已在 layer18 内写入 decision 或其他非-audio positions；它不能单独证明 donor audio state 在 layer18 之后仍原样存在。这个区别正是下一轮 attention/value tracing 需要拆开的部分。
+
+| Decision clamp 条件 | clamp end layer | mean CE（95% CI） | 双向一致 |
+|---|---:|---:|---:|
+| `decision_clamp_to_17` | 17 | −0.059 [−0.156, +0.038] | 39.6% |
+| `decision_clamp_to_18` | 18 | −0.034 [−0.131, +0.064] | 43.8% |
+| `decision_clamp_to_19` | 19 | −0.029 [−0.128, +0.069] | 41.7% |
+| `decision_clamp_to_20` | 20 | −0.043 [−0.139, +0.052] | 42.7% |
+| `decision_clamp_to_21` | 21 | −0.034 [−0.130, +0.063] | 40.6% |
+| `decision_clamp_to_22` | 22 | +0.004 [−0.097, +0.105] | 47.9% |
+| `decision_clamp_to_23` | 23 | −0.003 [−0.106, +0.100] | 47.9% |
+
+Decision position 的单次 patch 以及持续 clamp 都没有达到描述性 CI95 下界大于 0；延长 clamp 只把 layer17 的负向/不稳定效应推近 0，没有出现“single patch≈0、persistent clamp>0”。因此本轮没有证据表明 donor decision state 在后续 layers 中被持续整合成可用的 happy/sad likelihood。结合阶段六，当前更具体的判断是：**layer17 audio-token swap 有局部、可穿过一两个后续 block 的 counterfactual influence，但它的时间轨迹非单调；decision-token 的直接持续替换仍不能复现 donor-aligned readout。** 这仍是固定 prompt/verbalizer、单 seed、post-block state replacement 下的干预结果，不能直接等同于自然 routing。
+
 ## 当前结论
 
 1. **信息可读出。** Emotion 在 Whisper 后段、projector 以及 LLM audio-token mean 中都能被线性 probe 读出；projector 在本轮两个 split 上分别达到 95.8% 和 91.1%。
@@ -216,8 +253,9 @@ $$
 6. **forced-choice 也没有显示可用的情绪决策信号。** 对每条音频计算候选序列的 teacher-forced log-likelihood，并用 $S(x)=\log P(\text{happy}\mid x,p)-\log P(\text{sad}\mid x,p)$ 决策。4 个 prompt/verbalizer 条件的 accuracy 都是 50.0%，ROC-AUC 为 0.486–0.524，matched-pair 的 `S(happy)-S(sad)` 正方向比例为 0.458–0.500；结果见 [forced_choice_summary.csv](./forced_choice_summary.csv)、[forced_choice_summary.json](./forced_choice_summary.json) 和 [forced_choice_pair_margins.csv](./forced_choice_pair_margins.csv)。这说明当前设置下 final likelihood readout 没有把内部可读出的 emotion 分离成稳定的 happy/sad 选择。
 
 7. **activation patching 给出局部因果线索。** 在固定 `upper_prompt__upper_spaced`、seed=1234 的 12 个条件中，只有 `layer_17/audio_tokens` 的 CE 通过描述性 CI95 下界 >0（+0.061，[+0.020,+0.102]）；同层 `decision_token` 未通过，`layer_23/audio_tokens` 精确为 0。结果支持“layer 17 的 audio state 能影响后续 margin，但直接 decision-state 替换不稳定”的局部现象，不能单独证明自然 routing failure 或 downstream readout failure。
+8. **影响的持续时间不是单调累积。** 在 layer17 audio patch 后于 layer18/19 恢复 target state，CE 仍为正（+0.028/+0.036）；layer20/21 的区间跨 0，layer22/23 与 no-restore 回到约 +0.061。decision clamp 从 layer17 延长到 layer23 没有产生显著正向 CE。因而当前证据是“audio counterfactual influence 可短程保留但时间曲线非单调”，不是“持续 clamp 会逐层放大 decision evidence”。
 
-这是一轮冻结、二分类、固定 intensity 的诊断。forced-choice 结果只说明当前 checkpoint、手工重建配置、prompt/verbalizer 和自由音频输入下没有超过机会水平，不能写成“decoder 已被证明完全不使用 emotion”；instruction-following 能力不足或 checkpoint/config 加载问题仍需单独排除。activation patching 提供的是给定层、位置和 verbalizer 下的干预性因果效应，不等同于自然 routing 已被证明。RAVDESS 的 actor/acoustic 属性也可能和 emotion 混杂；本轮 audio encoder 使用固定 30 秒 Whisper 输入并做全时间 mean pooling，也可能削弱 token-level 的情绪方向。下一轮应先验证官方 checkpoint/config 加载和 text-only likelihood 校准，再做有效音频边界/token-level pooling 与按 actor 的多折 held-out。
+这是一轮冻结、二分类、固定 intensity 的诊断。forced-choice 结果只说明当前 checkpoint、手工重建配置、prompt/verbalizer 和自由音频输入下没有超过机会水平，不能写成“decoder 已被证明完全不使用 emotion”；instruction-following 能力不足或 checkpoint/config 加载问题仍需单独排除。activation patching 提供的是给定层、位置和 verbalizer 下的干预性因果效应，不等同于自然 routing 已被证明。RAVDESS 的 actor/acoustic 属性也可能和 emotion 混杂；本轮 audio encoder 使用固定 30 秒 Whisper 输入并做全时间 mean pooling，也可能削弱 token-level 的情绪方向。下一轮应把 layer17 的局部 audio effect 与 audio→decision 的 attention/value tracing、audio-token ablation 及多 seed/verbalizer 复核结合起来，解释非单调 persistence 曲线是否来自分布式 token computation、目标 state restore 的 off-manifold 差异，或真正的 routing dynamics。
 
 ## 可复现实验入口
 
@@ -231,6 +269,8 @@ $$
 - [analyze_decision_transfer.py](../../scripts/analyze_decision_transfer.py)
 - [run_activation_patching.py](../../scripts/run_activation_patching.py)
 - [analyze_activation_patching.py](../../scripts/analyze_activation_patching.py)
+- [run_persistence_patching.py](../../scripts/run_persistence_patching.py)
+- [analyze_persistence_patching.py](../../scripts/analyze_persistence_patching.py)
 
 forced-choice 运行阶段为 `slam_omni_diagnostics.py forced-choice`，默认执行 2×2 prompt/verbalizer 矩阵；候选标签按完整 token sequence 做 teacher-forced likelihood，不能用单 token argmax 替代。activation patching 的单条件入口如下（完整网格按 layer×patch-kind 拆分执行）：
 
@@ -248,6 +288,36 @@ python scripts/run_activation_patching.py \
 
 python scripts/analyze_activation_patching.py \
   --input-csv reports/2026-09-14-ravdess-happy-sad/activation_patch.csv \
+  --output-dir reports/2026-09-14-ravdess-happy-sad
+```
+
+持续时间实验的单 schedule 入口如下；完整网格是在同一固定参数下分别运行 7 个 audio schedule 和 7 个 decision schedule，再合并为 `persistence_patch.csv`：
+
+```bash
+python scripts/run_persistence_patching.py \
+  --manifest artifacts/ravdess_happy_sad_intensity01.csv \
+  --ravdess-root /data2/yb/paper/RAVDESS \
+  --slam-llm-root /data2/yb/paper/SLAM-LLM \
+  --qwen-path /data2/yb/paper_runtime_models/Qwen2-0.5B \
+  --whisper-path /data2/yb/paper_runtime_models/whisper/small.pt \
+  --checkpoint /data2/yb/paper/SLAM-Omni-0.5B/model.pt \
+  --output-csv /tmp/audio_restore_at_18.csv \
+  --condition upper_prompt__upper_spaced --mode audio_restore \
+  --initial-layer 17 --restore-layer 18 --batch-size 1 --seed 1234 --device cuda:0
+
+python scripts/run_persistence_patching.py \
+  --manifest artifacts/ravdess_happy_sad_intensity01.csv \
+  --ravdess-root /data2/yb/paper/RAVDESS \
+  --slam-llm-root /data2/yb/paper/SLAM-LLM \
+  --qwen-path /data2/yb/paper_runtime_models/Qwen2-0.5B \
+  --whisper-path /data2/yb/paper_runtime_models/whisper/small.pt \
+  --checkpoint /data2/yb/paper/SLAM-Omni-0.5B/model.pt \
+  --output-csv /tmp/decision_clamp_to_20.csv \
+  --condition upper_prompt__upper_spaced --mode decision_clamp \
+  --initial-layer 17 --clamp-end-layer 20 --batch-size 1 --seed 1234 --device cuda:0
+
+python scripts/analyze_persistence_patching.py \
+  --input-csv reports/2026-09-14-ravdess-happy-sad/persistence_patch.csv \
   --output-dir reports/2026-09-14-ravdess-happy-sad
 ```
 

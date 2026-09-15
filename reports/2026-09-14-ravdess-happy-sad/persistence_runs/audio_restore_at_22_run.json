@@ -1,0 +1,43 @@
+{
+  "manifest": "artifacts/ravdess_happy_sad_intensity01.csv",
+  "n_samples": 192,
+  "n_pairs": 96,
+  "condition_id": "upper_prompt__upper_spaced",
+  "happy_token_ids": [
+    86777,
+    56
+  ],
+  "sad_token_ids": [
+    328,
+    1808
+  ],
+  "experiment_type": "audio_restore",
+  "schedule_id": "audio_restore_at_22",
+  "schedule": [
+    {
+      "layer": 17,
+      "patch_kind": "audio_tokens",
+      "source": "donor"
+    },
+    {
+      "layer": 22,
+      "patch_kind": "audio_tokens",
+      "source": "target"
+    }
+  ],
+  "initial_patch_layer": 17,
+  "restore_layer": 22,
+  "clamp_end_layer": null,
+  "patch_site": "post_decoder_block_output",
+  "audio_start": 29,
+  "audio_length": 300,
+  "prefix_length": 331,
+  "decision_position": 330,
+  "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+  "model_parameters_frozen": true,
+  "self_patch_max_abs_likelihood_error": 1.1444091796875e-05,
+  "self_patch_tolerance": 0.001,
+  "seed": 1234,
+  "audio_semantics": "initial donor patch at layer 17; optional target baseline restore at the named later layer; no-restore lets later blocks evolve naturally",
+  "decision_semantics": "same-layer donor decision states are clamped at every layer from 17 through clamp_end_layer"
+}

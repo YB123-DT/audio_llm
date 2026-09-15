@@ -166,6 +166,7 @@ def _score_candidate_pairs(
     audio_start: int | None = None,
     audio_length: int | None = None,
     decision_position: int | None = None,
+    patch_specs: list[tuple[Any, Any, str]] | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Return happy and sad sequence log-probabilities for each prefix."""
     batch_size = prefix_batch.shape[0]
@@ -178,13 +179,22 @@ def _score_candidate_pairs(
         device=full_inputs_embeds.device,
     )
 
-    handle = None
+    hook_specs: list[tuple[Any, Any, str]] = list(patch_specs or [])
     if layer_module is not None:
         if donor is None or patch_kind is None or audio_start is None or audio_length is None or decision_position is None:
             raise ValueError("A complete patch specification is required when a layer is selected")
-        donor_repeated = donor.repeat_interleave(2, dim=0)
-        handle = layer_module.register_forward_hook(
-            _patch_hook(donor_repeated, patch_kind, audio_start, audio_length, decision_position)
+        hook_specs.append((layer_module, donor, patch_kind))
+    handles = []
+    for hook_layer, hook_donor, hook_kind in hook_specs:
+        if hook_donor.shape[0] != batch_size:
+            raise ValueError(
+                f"Patch donor batch {hook_donor.shape[0]} does not match prefix batch {batch_size}"
+            )
+        donor_repeated = hook_donor.repeat_interleave(2, dim=0)
+        handles.append(
+            hook_layer.register_forward_hook(
+                _patch_hook(donor_repeated, hook_kind, audio_start, audio_length, decision_position)
+            )
         )
     try:
         with torch.inference_mode():
@@ -208,7 +218,7 @@ def _score_candidate_pairs(
             selected = token_logprobs[row_indices, token_indices, target_ids]
             scores = selected.sum(dim=1).reshape(batch_size, 2).detach().cpu().numpy()
     finally:
-        if handle is not None:
+        for handle in handles:
             handle.remove()
     return scores[:, 0], scores[:, 1]
 

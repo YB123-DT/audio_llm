@@ -1,0 +1,472 @@
+{
+  "source_remote": "/data2/yb/audio_llm_runs/ravdess_happy_sad_intensity01_persistence",
+  "manifest": "artifacts/ravdess_happy_sad_intensity01.csv",
+  "condition_id": "upper_prompt__upper_spaced",
+  "happy_verbalizer": " HAPPY",
+  "sad_verbalizer": " SAD",
+  "n_schedules": 14,
+  "n_pairs": 96,
+  "n_raw_rows": 1344,
+  "schedule_ids": [
+    "audio_no_restore",
+    "audio_restore_at_18",
+    "audio_restore_at_19",
+    "audio_restore_at_20",
+    "audio_restore_at_21",
+    "audio_restore_at_22",
+    "audio_restore_at_23",
+    "decision_clamp_to_17",
+    "decision_clamp_to_18",
+    "decision_clamp_to_19",
+    "decision_clamp_to_20",
+    "decision_clamp_to_21",
+    "decision_clamp_to_22",
+    "decision_clamp_to_23"
+  ],
+  "patch_site": "post_decoder_block_output",
+  "audio_start": 29,
+  "audio_length": 300,
+  "decision_position": 330,
+  "prefix_length": 331,
+  "batch_size": 1,
+  "seed": 1234,
+  "device": "CUDA_VISIBLE_DEVICES=6, torch device cuda:0",
+  "model_parameters_frozen": true,
+  "all_rows_error_empty": true,
+  "baseline_max_abs_diff_across_schedules": 0.0,
+  "self_patch_max_abs_likelihood_error_max": 1.9073486328125e-05,
+  "self_patch_tolerance": 0.001,
+  "audio_semantics": "patch donor audio at post-block layer 17; restore unpatched target audio at one named later layer, or no-restore for natural evolution",
+  "decision_semantics": "clamp donor decision state at each same-layer post-block output from 17 through the end layer",
+  "per_schedule": [
+    {
+      "file": "audio_no_restore.csv",
+      "run_metadata": "audio_no_restore_run.json",
+      "experiment_type": "audio_restore",
+      "schedule_id": "audio_no_restore",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "schedule": [
+        {
+          "layer": 17,
+          "patch_kind": "audio_tokens",
+          "source": "donor"
+        }
+      ],
+      "self_patch_max_abs_likelihood_error": 1.1444091796875e-05,
+      "seed": 1234,
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "decision_position": 330
+    },
+    {
+      "file": "audio_restore_at_18.csv",
+      "run_metadata": "audio_restore_at_18_run.json",
+      "experiment_type": "audio_restore",
+      "schedule_id": "audio_restore_at_18",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "schedule": [
+        {
+          "layer": 17,
+          "patch_kind": "audio_tokens",
+          "source": "donor"
+        },
+        {
+          "layer": 18,
+          "patch_kind": "audio_tokens",
+          "source": "target"
+        }
+      ],
+      "self_patch_max_abs_likelihood_error": 3.814697265625e-06,
+      "seed": 1234,
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "decision_position": 330
+    },
+    {
+      "file": "audio_restore_at_19.csv",
+      "run_metadata": "audio_restore_at_19_run.json",
+      "experiment_type": "audio_restore",
+      "schedule_id": "audio_restore_at_19",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "schedule": [
+        {
+          "layer": 17,
+          "patch_kind": "audio_tokens",
+          "source": "donor"
+        },
+        {
+          "layer": 19,
+          "patch_kind": "audio_tokens",
+          "source": "target"
+        }
+      ],
+      "self_patch_max_abs_likelihood_error": 7.62939453125e-06,
+      "seed": 1234,
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "decision_position": 330
+    },
+    {
+      "file": "audio_restore_at_20.csv",
+      "run_metadata": "audio_restore_at_20_run.json",
+      "experiment_type": "audio_restore",
+      "schedule_id": "audio_restore_at_20",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "schedule": [
+        {
+          "layer": 17,
+          "patch_kind": "audio_tokens",
+          "source": "donor"
+        },
+        {
+          "layer": 20,
+          "patch_kind": "audio_tokens",
+          "source": "target"
+        }
+      ],
+      "self_patch_max_abs_likelihood_error": 7.62939453125e-06,
+      "seed": 1234,
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "decision_position": 330
+    },
+    {
+      "file": "audio_restore_at_21.csv",
+      "run_metadata": "audio_restore_at_21_run.json",
+      "experiment_type": "audio_restore",
+      "schedule_id": "audio_restore_at_21",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "schedule": [
+        {
+          "layer": 17,
+          "patch_kind": "audio_tokens",
+          "source": "donor"
+        },
+        {
+          "layer": 21,
+          "patch_kind": "audio_tokens",
+          "source": "target"
+        }
+      ],
+      "self_patch_max_abs_likelihood_error": 1.1444091796875e-05,
+      "seed": 1234,
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "decision_position": 330
+    },
+    {
+      "file": "audio_restore_at_22.csv",
+      "run_metadata": "audio_restore_at_22_run.json",
+      "experiment_type": "audio_restore",
+      "schedule_id": "audio_restore_at_22",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "schedule": [
+        {
+          "layer": 17,
+          "patch_kind": "audio_tokens",
+          "source": "donor"
+        },
+        {
+          "layer": 22,
+          "patch_kind": "audio_tokens",
+          "source": "target"
+        }
+      ],
+      "self_patch_max_abs_likelihood_error": 1.1444091796875e-05,
+      "seed": 1234,
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "decision_position": 330
+    },
+    {
+      "file": "audio_restore_at_23.csv",
+      "run_metadata": "audio_restore_at_23_run.json",
+      "experiment_type": "audio_restore",
+      "schedule_id": "audio_restore_at_23",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "schedule": [
+        {
+          "layer": 17,
+          "patch_kind": "audio_tokens",
+          "source": "donor"
+        },
+        {
+          "layer": 23,
+          "patch_kind": "audio_tokens",
+          "source": "target"
+        }
+      ],
+      "self_patch_max_abs_likelihood_error": 1.1444091796875e-05,
+      "seed": 1234,
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "decision_position": 330
+    },
+    {
+      "file": "decision_clamp_to_17.csv",
+      "run_metadata": "decision_clamp_to_17_run.json",
+      "experiment_type": "decision_clamp",
+      "schedule_id": "decision_clamp_to_17",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "schedule": [
+        {
+          "layer": 17,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        }
+      ],
+      "self_patch_max_abs_likelihood_error": 7.62939453125e-06,
+      "seed": 1234,
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "decision_position": 330
+    },
+    {
+      "file": "decision_clamp_to_18.csv",
+      "run_metadata": "decision_clamp_to_18_run.json",
+      "experiment_type": "decision_clamp",
+      "schedule_id": "decision_clamp_to_18",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "schedule": [
+        {
+          "layer": 17,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 18,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        }
+      ],
+      "self_patch_max_abs_likelihood_error": 1.1444091796875e-05,
+      "seed": 1234,
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "decision_position": 330
+    },
+    {
+      "file": "decision_clamp_to_19.csv",
+      "run_metadata": "decision_clamp_to_19_run.json",
+      "experiment_type": "decision_clamp",
+      "schedule_id": "decision_clamp_to_19",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "schedule": [
+        {
+          "layer": 17,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 18,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 19,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        }
+      ],
+      "self_patch_max_abs_likelihood_error": 1.52587890625e-05,
+      "seed": 1234,
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "decision_position": 330
+    },
+    {
+      "file": "decision_clamp_to_20.csv",
+      "run_metadata": "decision_clamp_to_20_run.json",
+      "experiment_type": "decision_clamp",
+      "schedule_id": "decision_clamp_to_20",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "schedule": [
+        {
+          "layer": 17,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 18,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 19,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 20,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        }
+      ],
+      "self_patch_max_abs_likelihood_error": 1.9073486328125e-05,
+      "seed": 1234,
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "decision_position": 330
+    },
+    {
+      "file": "decision_clamp_to_21.csv",
+      "run_metadata": "decision_clamp_to_21_run.json",
+      "experiment_type": "decision_clamp",
+      "schedule_id": "decision_clamp_to_21",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "schedule": [
+        {
+          "layer": 17,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 18,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 19,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 20,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 21,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        }
+      ],
+      "self_patch_max_abs_likelihood_error": 7.62939453125e-06,
+      "seed": 1234,
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "decision_position": 330
+    },
+    {
+      "file": "decision_clamp_to_22.csv",
+      "run_metadata": "decision_clamp_to_22_run.json",
+      "experiment_type": "decision_clamp",
+      "schedule_id": "decision_clamp_to_22",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "schedule": [
+        {
+          "layer": 17,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 18,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 19,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 20,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 21,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 22,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        }
+      ],
+      "self_patch_max_abs_likelihood_error": 7.62939453125e-06,
+      "seed": 1234,
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "decision_position": 330
+    },
+    {
+      "file": "decision_clamp_to_23.csv",
+      "run_metadata": "decision_clamp_to_23_run.json",
+      "experiment_type": "decision_clamp",
+      "schedule_id": "decision_clamp_to_23",
+      "n_samples": 192,
+      "n_pairs": 96,
+      "schedule": [
+        {
+          "layer": 17,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 18,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 19,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 20,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 21,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 22,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        },
+        {
+          "layer": 23,
+          "patch_kind": "decision_token",
+          "source": "donor"
+        }
+      ],
+      "self_patch_max_abs_likelihood_error": 3.814697265625e-06,
+      "seed": 1234,
+      "audio_start": 29,
+      "audio_length": 300,
+      "prefix_length": 331,
+      "decision_position": 330
+    }
+  ]
+}
