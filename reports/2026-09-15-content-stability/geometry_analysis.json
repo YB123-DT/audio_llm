@@ -1,0 +1,12 @@
+{
+  "samples": 192,
+  "actors": 24,
+  "repetitions_per_cell": 2,
+  "bootstrap": 10000,
+  "seed": 20260915,
+  "input_sha256": "0796d412b527dd281198c6e06b164b0b8ae990d54713b1009cbaebfc7283d490",
+  "sklearn_version": "1.7.2",
+  "raw_coordinate_parity_max": 3.8191672047105385e-14,
+  "uncertainty": "Unadjusted percentile 95% actor-cluster bootstrap of class-mean geometry; nonlinear high-dimensional norms, cosines and ratios can have biased bootstrap distributions, so intervals are descriptive and are not bias-corrected hypothesis tests; independently fitted statement probe comparisons are descriptive only, no bootstrap/refit claims.",
+  "caveats": "Per-statement probes use all examples of that statement for descriptive direction comparison, not held-out accuracy. Raw and norm-normalized intercept differences do not identify shared-threshold shifts unless directions align. High dimensional regularized directions are not unique. Offset projection uses happy-minus-sad axes; offset-to-gap = o dot d / ||d||^2."
+}

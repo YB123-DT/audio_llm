@@ -1,0 +1,81 @@
+{
+  "remote_tests": "67 passed",
+  "local_tests": "47 passed,18 skipped (optional runtime dependencies unavailable)",
+  "compileall": "passed",
+  "shell_syntax": "passed",
+  "metadata_samples": 192,
+  "actors": 24,
+  "rows_per_actor": 8,
+  "counterfactual_oof_rows": 8064,
+  "geometry": {
+    "samples": 192,
+    "actors": 24,
+    "repetitions_per_cell": 2,
+    "bootstrap": 10000,
+    "seed": 20260915,
+    "input_sha256": "0796d412b527dd281198c6e06b164b0b8ae990d54713b1009cbaebfc7283d490",
+    "sklearn_version": "1.7.2",
+    "raw_coordinate_parity_max": 3.8191672047105385e-14,
+    "uncertainty": "Unadjusted percentile 95% actor-cluster bootstrap of class-mean geometry; nonlinear high-dimensional norms, cosines and ratios can have biased bootstrap distributions, so intervals are descriptive and are not bias-corrected hypothesis tests; independently fitted statement probe comparisons are descriptive only, no bootstrap/refit claims.",
+    "caveats": "Per-statement probes use all examples of that statement for descriptive direction comparison, not held-out accuracy. Raw and norm-normalized intercept differences do not identify shared-threshold shifts unless directions align. High dimensional regularized directions are not unique. Offset projection uses happy-minus-sad axes; offset-to-gap = o dot d / ||d||^2."
+  },
+  "counterfactual": {
+    "old_oof_parity_max": 9.237055564881302e-14,
+    "constant_shift_max": 7.105427357601002e-15,
+    "centered_pipeline_parity_max": 3.044994261180989e-07,
+    "source_only_noop_max": 1.6477543525184046e-06,
+    "within_fold_auc_change_max": 0.0,
+    "layer_18_statement_folds": 2,
+    "layer_18_statement_coverage_min": 1,
+    "layer_18_statement_coverage_max": 1,
+    "layer_18_joint_folds": 48,
+    "layer_18_joint_coverage_min": 1,
+    "layer_18_joint_coverage_max": 1,
+    "layer_19_statement_folds": 2,
+    "layer_19_statement_coverage_min": 1,
+    "layer_19_statement_coverage_max": 1,
+    "layer_19_joint_folds": 48,
+    "layer_19_joint_coverage_min": 1,
+    "layer_19_joint_coverage_max": 1,
+    "layer_20_statement_folds": 2,
+    "layer_20_statement_coverage_min": 1,
+    "layer_20_statement_coverage_max": 1,
+    "layer_20_joint_folds": 48,
+    "layer_20_joint_coverage_min": 1,
+    "layer_20_joint_coverage_max": 1,
+    "layer_21_statement_folds": 2,
+    "layer_21_statement_coverage_min": 1,
+    "layer_21_statement_coverage_max": 1,
+    "layer_21_joint_folds": 48,
+    "layer_21_joint_coverage_min": 1,
+    "layer_21_joint_coverage_max": 1,
+    "layer_22_statement_folds": 2,
+    "layer_22_statement_coverage_min": 1,
+    "layer_22_statement_coverage_max": 1,
+    "layer_22_joint_folds": 48,
+    "layer_22_joint_coverage_min": 1,
+    "layer_22_joint_coverage_max": 1,
+    "layer_23_statement_folds": 2,
+    "layer_23_statement_coverage_min": 1,
+    "layer_23_statement_coverage_max": 1,
+    "layer_23_joint_folds": 48,
+    "layer_23_joint_coverage_min": 1,
+    "layer_23_joint_coverage_max": 1
+  },
+  "code_sha256": {
+    "analyze_edge_content_geometry.py": "d6b20c4383f073a822b5d949abdac5a76dd8942fa57e69f9e0c78cad628e7c93",
+    "analyze_edge_content_counterfactual.py": "840606dc2b4062cab726e773f5d0b2309335cf6a7910940b2f888d4a09889e89"
+  },
+  "binary_artifacts": {
+    "geometry_vectors.npz": {
+      "sha256": "d7f240045793799fd3ec3d5ce6a3cda3fab82b7b34d0f2f9dc5bee83245b4bf6",
+      "size_bytes": 293321,
+      "storage": "local and biggpu; excluded from Git"
+    },
+    "counterfactual_directions.npz": {
+      "sha256": "435f91c7c2b9d0df5ebb02ffc4c3fd5d36c4b62de8341faebbe10735412a8c2c",
+      "size_bytes": 8582492,
+      "storage": "local and biggpu; excluded from Git"
+    }
+  }
+}

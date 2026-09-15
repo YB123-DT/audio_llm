@@ -1,0 +1,12 @@
+{
+  "n_samples": 192,
+  "bootstrap": 10000,
+  "seed": 20260915,
+  "sklearn_version": "1.7.2",
+  "input_sha256": "0796d412b527dd281198c6e06b164b0b8ae990d54713b1009cbaebfc7283d490",
+  "method": "Train-only StandardScaler + C=1 lbfgs; no tuning; per-layer independent. Raw-coordinate coefficients. Fixed-fitted OOF actor bootstrap; 95% percentile intervals unadjusted.",
+  "statement_center": "Unlabeled transductive test-distribution centering; balanced known sample design. Equivalent to raw margin minus w dot(mean_target-mean_source); AUC invariant within fold, pooled AUC may change.",
+  "joint_calibration": "Outer held actor never used for calibration. Other 23 actors provide both statement means WITHOUT target emotion labels; classifier uses only source statement labels. Calibration sees target statement distribution, so not strict unseen-statement induction.",
+  "rank1": "Rank1 content axis estimated from same independent unlabeled calibration; both source training and target test projected then training-only scaler and classifier refit.",
+  "limitations": "Mean shifts with class prevalence; balanced design matters. Centering success supports threshold contamination; failure does not prove rotation. Rank1 projection can remove emotion if axes overlap."
+}

@@ -85,3 +85,14 @@ Q5 已通过 forced-choice 和 activation patching 收窄，但仍未完成 rout
 | Q23：selection验证 | Layer17是孤立峰，还是更广泛窗口的一点？ | 全24层matched双向audio patch，96pairs、actorbootstrap。点估计峰13 CE0.08301，11–13均约0.08；17为0.04555并精确复现。 | 17不是点估计峰或明显孤立尖峰；simultaneous band仅11/13排除0，但13−17配对pointwise CI仍跨0，不能声称唯一峰或13显著更强。17条件路径成立，不等于特有瓶颈。 |
 
 [完整报告](./2026-09-15-edge-representation/report.md) · [验证](./2026-09-15-edge-representation/verification.json)。下一研究问题应区分edge中的context-conditioned读出、阈值迁移及后续计算，而不预设readout alignment failure；本轮未扩展训练或校准实验。
+
+
+## Q24–Q26：Content offset、阈值迁移与残余geometry（2026-09-15）
+
+| 版本 | 核心问题 | 关键结果 | 问题变化与限制 |
+|---|---|---|---|
+| Q24：classmean与probe geometry | 两句话的emotion方向是否一致，content shift是否沿readout污染分数？ | Block19 cos(d01,d02)=0.488、cos(w01,w02)=0.174；norm(o)=3.593、norm(d_shared)=0.358；w01·o=−2.761、w02·o=−13.535。 | Offset大且作用于固定probe分数，但方向并非高度一致；独立probe的intercept差不能直接当成同一方向阈值差。高维geometry区间有非线性估计偏差。 |
+| Q25：去均值反事实 | 只改statement均值能否恢复跨文本分类？ | Block19 statement57.29%→62.50%，提升CI跨0；block23从49.48%→65.10%，+15.63pp [8.33,22.92]。所有centering的within-fold AUC精确不变。 | 支持offset导致部分阈值失效；测试batch均值属于transductive访问。Pooled AUC改善不是fold内排序改善，未恢复70–80%。 |
+| Q26：独立actor校准 | 不用测试actor估计均值或content方向，改善是否保留？ | 其他23actors提供无标签target statement校准；block23 joint50.52%→60.42%，+9.90pp [3.13,17.71]；rank1同为60.42%。Block19改善小。 | 校准隔离测试actor，但见过target statement的无标签分布，不是严格未知文本induction。Offset是部分原因；残余失败不能仅凭rank1结果归因于emotion旋转。全部条件区间未校正。 |
+
+[完整报告](./2026-09-15-content-stability/report.md) · [验证](./2026-09-15-content-stability/verification.json)。复用已有edge向量，无新模型推理、attention路径实验或模型训练。
