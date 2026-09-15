@@ -1,0 +1,21 @@
+{
+  "component_rows": 2688,
+  "attribution_rows": 4608,
+  "samples": 192,
+  "pairs": 96,
+  "old_pair_ce_max_abs_error": 6.9141387939453125e-06,
+  "old_clean_margin_max_abs_error": 1.52587890625e-05,
+  "checkpoint_sha256": "601055c1d7022f076a29f1c22693aa6038083631f54e51204f3099a4ec37249e",
+  "joint_attention_clean_margin_max_abs_error": 0.0,
+  "qkv_component_rows": 5568,
+  "qkv_unique_conditions": 29,
+  "qkv_stage_base_repeat_max_abs_error": 0.0,
+  "qkv_joint_clean_margin_max_abs_error": 0.0,
+  "remote_tests": "23 passed",
+  "local_tests": "19 passed, 2 skipped (torch unavailable)",
+  "clean_happy_predictions": 0,
+  "patched_happy_predictions": 0,
+  "executed_runner_hash_verified_before_format_change": true,
+  "delivered_runner_sha256": "a34a102abe6528cf0ea7ffd8b40e291ada9ffae284d4c7765c5445010b68bdad",
+  "delivery_format_note": "After verified execution, CSV writers changed only to lineterminator LF; delivered CSV CRLF normalized to LF. Numerical values unchanged. Run metadata retains executed source hash."
+}

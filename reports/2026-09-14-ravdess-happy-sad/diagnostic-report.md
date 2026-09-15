@@ -294,17 +294,19 @@ Decision position 的单次 patch 以及持续 clamp 都没有达到描述性 CI
 
 `matched_swap` 在 actor-cluster bootstrap 下仍保持正向区间；`same_emotion` 和 `random_donor` 的 bootstrap CI 都跨过 0。same-emotion 的 happy/sad donor same-emotion 比例均为 100%，same-content 比例均为 100%；random donor 的 same-emotion 比例为 40.6%/44.8%，same-content 比例为 26.0%/25.0%。matched control 与既有单 token layer17 audio patch 逐 pair 完全一致（最大差 0），说明 control runner 没有改变原始 effect 定义或 target/donor 方向。
 
-该结果支持一个有限但更具体的判断：layer17 的 donor-aligned effect 在严格 emotion swap 下比同 emotion replacement 更稳定，且在 actor-cluster 重采样后仍为正；它不再像单纯的 broad state replacement。random donor 的均值仍为正，说明其中混有状态/内容变化，因而不能用它证明 effect 只由 emotion 引起。mapping 及原始 rows 见 [donor mapping](./donor_controls/layer17_audio_donor_controls_single_token_mapping.csv) 和 [donor-control rows](./donor_controls/layer17_audio_donor_controls_single_token.csv)，统计见 [donor control summary](./donor_controls/analysis/donor_control_summary.csv)、[JSON](./donor_controls/analysis/donor_control_summary.json) 与 [bootstrap plot](./donor_controls/analysis/donor_control_summary.png)。
+该结果支持严格 emotion swap 的平均正向效应在 actor-cluster 重采样下仍存在。但 matched 显著、controls 不显著，不能代替两者的直接配对差异检验，也不足以排除 broad state replacement。random donor 的均值仍为正，说明其中混有状态/内容变化，因而不能用它证明 effect 只由 emotion 引起。mapping 及原始 rows 见 [donor mapping](./donor_controls/layer17_audio_donor_controls_single_token_mapping.csv) 和 [donor-control rows](./donor_controls/layer17_audio_donor_controls_single_token.csv)，统计见 [donor control summary](./donor_controls/analysis/donor_control_summary.csv)、[JSON](./donor_controls/analysis/donor_control_summary.json) 与 [bootstrap plot](./donor_controls/analysis/donor_control_summary.png)。
 
 ## 阶段十一：attention/value path map
 
-在 donor controls 通过后，先做不改变 hidden state 的描述性 path tracing。单 token `upper_prompt__lower_spaced` 下，对 192 条样本的 Qwen 24 层×14 头记录 decision position `330` 指向 300 个 audio positions 的 attention mass，并记录每个 head 的 attention-weighted value contribution L2 norm。为确保能取得权重，运行时将 attention implementation 固定为 eager；所有参数仍冻结。
+在 donor controls 之后，先做不改变 hidden state 的描述性 path tracing。单 token `upper_prompt__lower_spaced` 下，对 192 条样本的 Qwen 24 层×14 头记录 decision position `330` 指向 300 个 audio positions 的 attention mass，并记录每个 head 的 attention-weighted value contribution L2 norm。为确保能取得权重，运行时将 attention implementation 固定为 eager；所有参数仍冻结。
 
 后续层的高平均 attention×value flow 主要出现在 L18H4、L20H12、L21H5、L22H3/H13、L23H9 等 head；但 pair-level sad−happy delta 与 layer17 audio CE 的相关性没有形成单一集中 head，最大绝对相关性约 0.51（L22H10，相关性为负）。这些是候选路径指标，不是因果效应。完整 336 个 layer/head 条目、pair delta 数组和运行元数据见 [attention/value summary](./attention_value_trace/attention_value_path_summary.csv)、[arrays](./attention_value_trace/attention_value_path_summary.npz) 和 [run JSON](./attention_value_trace/attention_value_path_summary_run.json)。
 
 ## 阶段十二：目标化 attention-head causal patch
 
-为了检验上述候选 head 是否真的把 layer17 emotion evidence 带到首个 decision candidate，进一步对 10 个预注册候选（后续层中高 attention×value flow 或高 pair-level value delta）做 head-level donor patch。干预发生在 `pre_o_proj_decision_head`：只替换该 head 在 decision position 的 pre-`o_proj` attention vector，其余 head、audio positions、prompt 和候选 token 都保持 target 状态。每个 head 覆盖 96 个 matched pairs，并先做 target self-patch no-op 检查。
+解释更正（2026-09-15）：本阶段替换的是 clean donor 的整个 decision-head contribution，并未接在 layer17 audio patch 后，因此测试 head transplant 的效应，不是 layer17 效应的路径中介。候选由同一数据选择，属于探索性分析。
+
+为了检验上述候选 head 是否真的把 layer17 emotion evidence 带到首个 decision candidate，进一步对 10 个由同一数据的描述性指标选出的探索性候选（后续层中高 attention×value flow 或高 pair-level value delta）做 head-level donor patch。干预发生在 `pre_o_proj_decision_head`：只替换该 head 在 decision position 的 pre-`o_proj` attention vector，其余 head、audio positions、prompt 和候选 token 都保持 target 状态。每个 head 覆盖 96 个 matched pairs，并先做 target self-patch no-op 检查。
 
 | head | mean CE | actor-bootstrap 95% CI | 双向方向（happy / sad） |
 |---|---:|---:|---:|
@@ -334,7 +336,7 @@ Decision position 的单次 patch 以及持续 clamp 都没有达到描述性 CI
 8. **影响的持续时间不是单调累积。** 在 layer17 audio patch 后于 layer18/19 恢复 target state，CE 仍为正（+0.028/+0.036）；layer20/21 的区间跨 0，layer22/23 与 no-restore 回到约 +0.061。decision clamp 从 layer17 延长到 layer23 没有产生显著正向 CE。因而当前证据是“audio counterfactual influence 可短程保留但时间曲线非单调”，不是“持续 clamp 会逐层放大 decision evidence”。
 9. **旧两 token CE 主要来自第一个 candidate token。** 单 token verbalizer 复现了 layer17 audio-token 的正向 CE（+0.0456，[+0.0111,+0.0800]），而 decision-token CE 仍跨过 0。对两 token 条件逐位置分解后，audio patch 的 token 1 CE 为 +0.0582、token 2 为 +0.0027；decision patch 的 token 1 为 −0.0617、token 2 为 +0.0027。两位置相加可在约 $5×10^{-6}$ 内重建旧 sequence CE。这说明后续 persistence 与 decision clamp 应优先解释首个候选标签位置的 evidence，而不能把旧 sequence effect 归因于第二 token dynamics。
 10. **单 token 的持续性更短，decision clamp 仍未形成稳定读出。** no-restore 的 layer17 audio CE 为 +0.0456（CI [+0.0111,+0.0800]），layer18 恢复 target audio 后降为 +0.0097（CI 跨 0）；decision clamp 从 −0.0132 向 +0.0326 移动，但所有 CI95 都跨 0。当前最保守的解释是 layer17 audio state 对首个标签 token 有局部、可复现的影响，却尚未证明后续 decision state 自然承接了该证据。
-11. **layer17 effect 对 donor emotion 有一定特异性。** 在单 token layer17 audio patch 下，matched emotion swap 的 actor-cluster bootstrap CI 为 [+0.0082,+0.0862]；same-emotion、同内容跨 actor donor 的 CI 为 [−0.0120,+0.0391]，random donor 的 CI 为 [−0.0002,+0.0648]。因此 broad state replacement 不能解释全部现象，但 random donor 的非零均值仍要求后续控制进一步拆分 emotion、speaker 与 content。
+11. **layer17 matched emotion swap 的正向效应可复现，特异性尚未建立。** 在单 token layer17 audio patch 下，matched emotion swap 的 actor-cluster bootstrap CI 为 [+0.0082,+0.0862]；same-emotion、同内容跨 actor donor 的 CI 为 [−0.0120,+0.0391]，random donor 的 CI 为 [−0.0002,+0.0648]。这些分别对零的区间不能证明条件间差异；仍需要直接配对 contrasts，以及进一步拆分 emotion、speaker 与 content。
 12. **描述性 path map 没有显示单一集中 head。** decision→audio attention mass 与 value norm 在多层多头都较高；pair-level delta 与 layer17 CE 的最大绝对相关性约 0.51，不能把相关 head 当作机制。
 13. **目标化 head patch 未得到单 head 的稳定 causal CE。** 10 个后续候选 head 的 actor-bootstrap CI 全部跨 0，最大均值约 +0.009。当前结果更符合分布式 head/value routing 或 donor head state 的 off-manifold 风险；是否存在组合式路径，需要在控制多重比较后再做组合 patch 或 value ablation。
 

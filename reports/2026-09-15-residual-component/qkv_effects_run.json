@@ -1,0 +1,49 @@
+{
+  "n_samples": 192,
+  "n_pairs": 96,
+  "seed": 1234,
+  "positions": {
+    "audio_start": 29,
+    "audio_length": 300,
+    "prefix_length": 331,
+    "decision_position": 330
+  },
+  "condition_id": "upper_prompt__lower_spaced",
+  "prompt": "Listen to the speech. Is the speaker HAPPY or SAD? Answer only HAPPY or SAD.",
+  "happy_token_ids": [
+    6247
+  ],
+  "sad_token_ids": [
+    12421
+  ],
+  "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+  "model_parameters_frozen": true,
+  "torch_version": "2.5.1",
+  "transformers_version": "4.57.6",
+  "attention_implementation": "sdpa",
+  "model_dtype": "torch.float32",
+  "numerical_checks": {
+    "clean_candidate_parity_max": 1.52587890625e-05,
+    "patched_candidate_parity_max": 1.430511474609375e-05,
+    "final_lens_parity_max": 3.5762786865234375e-06,
+    "self_audio_max": 0.0,
+    "component_noop_max": 0.0,
+    "pre_routing_decision_max": 0.0
+  },
+  "tolerance": 0.001,
+  "candidate_parity_samples": 192,
+  "noop_samples": 1,
+  "upstream_patch": "opposite emotion donor audio at post-block 17",
+  "component_restore": "clean target module contribution at decision only, before residual addition",
+  "qkv_layers": [
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+  ],
+  "qkv_scope": "Q decision and K all prefix sources; V all prefix sources; projected states before RoPE",
+  "attribution": "post-block decision residual; raw dot W_happy-W_sad and final-RMSNorm logit lens; delta is donor oriented",
+  "script_sha256": "b028b549caf6eeb6ab2bc1f81475f2f752c3221206e1eae0ef9a54feb4dda264"
+}

@@ -1,0 +1,23 @@
+{
+  "attention_wins": true,
+  "joint_attention_mediation": {
+    "condition": "attention_joint",
+    "metric": "mediated_effect",
+    "mean": 0.0455513559281826,
+    "ci_low": 0.008474388842781386,
+    "ci_high": 0.08568029310554266,
+    "n_pairs": 96,
+    "n_actors": 24
+  },
+  "joint_attention_minus_mlp": {
+    "condition": "joint",
+    "metric": "attention_minus_mlp_mediation",
+    "mean": 0.04652320717771848,
+    "ci_low": 0.016497964722414812,
+    "ci_high": 0.0769558882030348,
+    "n_pairs": 96,
+    "n_actors": 24
+  },
+  "bootstrap": "10000 paired actor-cluster resamples; numpy seed 20260915",
+  "scope": "Conditional decision-position component restoration after block17 audio swap; exploratory block scans have unadjusted intervals."
+}
