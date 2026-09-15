@@ -1,0 +1,25 @@
+{
+  "n_samples": 192,
+  "n_rows": 960,
+  "checks": {
+    "previous_audio_source_clean_margin_max_abs_error": 0.0,
+    "previous_audio_source_patched_margin_max_abs_error": 0.0,
+    "previous_audio_source_restored_margin_max_abs_error": 4.291534423828125e-06,
+    "baseline_condition_consistency_max": 0.0
+  },
+  "tolerance": 0.001,
+  "runner_hash_matches": true,
+  "remote_tests": "37 passed",
+  "local_tests": "27 passed, 8 skipped (torch unavailable)",
+  "syntax_checks": "compileall, bash -n, git diff --check",
+  "runtime_numerical_checks": {
+    "clean_candidate_parity_max": 1.52587890625e-05,
+    "patched_candidate_parity_max": 1.430511474609375e-05,
+    "self_audio_max": 0.0,
+    "component_noop_max": 0.0,
+    "attention_reconstruction_max": 0.00014543533325195312,
+    "nonselected_rows_max": 0.0,
+    "all_query_source_reference_max": 4.291534423828125e-06,
+    "pre_audio_query_delta_max": 0.0
+  }
+}

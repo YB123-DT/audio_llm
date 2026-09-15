@@ -55,3 +55,11 @@ Q5 已通过 forced-choice 和 activation patching 收窄，但仍未完成 rout
 | 上轮all-V移除效应主要来自audio values，还是audio先写入非audio位置后间接传播？ | 固定post17 audio patch，blocks18–23按source恢复V：audio、prompt、other、non-audio、decision、结束标记、all；7条件×192样本。 | Audio M=+0.06653，all=+0.06351，prompt=0，other/non-audio=+0.000788（CI跨0）；audio−all=+0.003018 [0.000016,0.005939]；audio−non-audio=+0.065740 [0.021715,0.106847]。All-V与旧结果逐样本精确一致。 | 当前margin effect主要依赖audio-position values，没有大的非audio V中介效应。恢复作用于所有query，可同时阻断audio→other的首次写入，因此未独立证明audio→decision直达，也未排除所有multi-hop。后续问题是decision-query/edge-specific的audio V恢复能否复现该效应；本轮未扩展执行。 |
 
 [Source-specific报告](./2026-09-15-source-value/report.md) · [配对contrasts](./2026-09-15-source-value/analysis/source_contrasts.csv) · [验证](./2026-09-15-source-value/verification.json)。Audio-only略大于all-V及非零非加性项，提示不能将恢复效应相加解释为独立中介百分比。
+
+## Q17：固定audio source，哪类query接收其value效应？（2026-09-15）
+
+| 核心问题 | 实验 | 关键结果 | 结论与边界 |
+|---|---|---|---|
+| Q16的audio-source dependence主要来自decision直接读取，还是先写入audio/marker等其他query后传播？ | 在post17 audio swap下，blocks18–23的pre-o_proj按query加入A_current·(V_clean−V_current)，仅audio source非零；decision、audio、end-marker、non-decision、all五条件×192样本。 | Decision M=+0.06610，all=+0.06653；差值−0.000428 [−0.002036,+0.001176]。Non-decision M=−0.001845（CI跨0）；decision−non-decision=+0.067945 [+0.024225,+0.109851]。Edge-all与原source restore最大margin差4.29×10⁻⁶。 | 结果接近情况A：当前条件干预的主要margin效应位于后续audio-V→decision-query读取边。未看到大的非decision-query正向移除效应；但被读取的audio values此前仍可能经历传播/重编码，且实验未穷尽K/routing/residual间接路径。没有建立正式等价或可加的中介比例。 |
+
+[Edge restore报告](./2026-09-15-audio-edge/report.md) · [配对contrasts](./2026-09-15-audio-edge/analysis/edge_contrasts.csv) · [验证](./2026-09-15-audio-edge/verification.json)。没有更换source、训练插件或修改checkpoint。更细的block/head定位及跨prompt验证仍未执行。

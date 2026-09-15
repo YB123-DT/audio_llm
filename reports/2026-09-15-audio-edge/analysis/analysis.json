@@ -1,0 +1,7 @@
+{
+  "bootstrap_samples": 10000,
+  "seed": 20260915,
+  "unit": "actor cluster",
+  "interval": "unadjusted percentile 95%",
+  "interpretation": "Conditional query-edge restore; effects not additive and equality not established by a null contrast"
+}

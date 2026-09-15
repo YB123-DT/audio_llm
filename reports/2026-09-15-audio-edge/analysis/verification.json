@@ -1,0 +1,11 @@
+{
+  "n_samples": 192,
+  "n_rows": 960,
+  "checks": {
+    "previous_audio_source_clean_margin_max_abs_error": 0.0,
+    "previous_audio_source_patched_margin_max_abs_error": 0.0,
+    "previous_audio_source_restored_margin_max_abs_error": 4.291534423828125e-06,
+    "baseline_condition_consistency_max": 0.0
+  },
+  "tolerance": 0.001
+}
