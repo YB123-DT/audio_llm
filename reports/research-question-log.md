@@ -96,3 +96,12 @@ Q5 已通过 forced-choice 和 activation patching 收窄，但仍未完成 rout
 | Q26：独立actor校准 | 不用测试actor估计均值或content方向，改善是否保留？ | 其他23actors提供无标签target statement校准；block23 joint50.52%→60.42%，+9.90pp [3.13,17.71]；rank1同为60.42%。Block19改善小。 | 校准隔离测试actor，但见过target statement的无标签分布，不是严格未知文本induction。Offset是部分原因；残余失败不能仅凭rank1结果归因于emotion旋转。全部条件区间未校正。 |
 
 [完整报告](./2026-09-15-content-stability/report.md) · [验证](./2026-09-15-content-stability/verification.json)。复用已有edge向量，无新模型推理、attention路径实验或模型训练。
+
+
+## Q27：自然edge的均值校正能否修复模型自身readout？（2026-09-15）
+
+| 核心问题 | 实验 | 关键结果 | 更新与限制 |
+|---|---|---|---|
+| 外部probe的offset修正能否转化为模型自身emotion读出的改善？ | 用其他23actors、无emotion标签估计每statement clean edge均值；在post-o_proj decision行加reference−mu_s，联合18–23及单独19/23。固定单token LM readout。 | 联合AUC0.5212→0.5126，Δ−0.00857 [−0.01617,−0.00033]；gap0.03258→0.02159，变化CI跨0；common shift−0.13683。全部条件192/192 SAD，accuracy50%。单独23 AUC0.5275，变化CI跨0。 | 简单clean-mean offset校正不足以修复自然readout；外部probe的阈值证据不能直接归因为原LM失败主因。已知statement、无标签target校准、固定clean均值及后续动态变化限制解释；未证明offset完全无关或故障只在LM head。 |
+
+[完整报告](./2026-09-15-natural-edge-centering/report.md) · [验证](./2026-09-15-natural-edge-centering/verification.json)。均值按actor隔离，模型冻结、无donor，无新attention路径搜索或模型训练。

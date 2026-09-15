@@ -1,0 +1,8 @@
+{
+  "bootstrap": "10000 paired actor-cluster draws, seed 20260915",
+  "auc": "Cross-actor positive-negative comparisons recomputed with sampled actor multiplicities; ties=0.5",
+  "intervals": "Unadjusted percentile 95%; all conditions share resamples",
+  "bootstrap_scope": "Conditional on fitted leave-one-actor-out centering means; means are not reestimated in bootstrap draws, so calibration uncertainty is not included",
+  "decision": "Happy if margin>0, otherwise sad; no threshold fitting or model calibration",
+  "statement_descriptives": "Descriptive point estimates, not independent-actor evidence"
+}

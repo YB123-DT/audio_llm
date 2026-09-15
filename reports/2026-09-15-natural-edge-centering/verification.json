@@ -1,0 +1,44 @@
+{
+  "remote_tests": "72 passed",
+  "local_tests": "51 passed,19 skipped (optional runtime dependencies unavailable)",
+  "compileall": "passed",
+  "shell_syntax": "passed",
+  "samples": 192,
+  "scores": 960,
+  "calibration_cells": 288,
+  "calibration_samples_per_statement": 92,
+  "independent_calibration_recompute_max_error": 0,
+  "runtime": {
+    "zero_noop_max": 0.0,
+    "nondecision_rows_max": 0.0,
+    "candidate_parity_max": 1.52587890625e-05,
+    "historical_clean_parity_max": 0.0,
+    "opposite_shift_max": 8.881784197001252e-16
+  },
+  "analysis": {
+    "n_samples": 192,
+    "n_rows": 960,
+    "n_actors": 24,
+    "checks": {
+      "zero_noop_max": 0.0,
+      "clean_field_parity_max": 0.0,
+      "historical_clean_parity_max": 0.0
+    },
+    "score_ties": {
+      "clean": 0,
+      "zero_noop": 0,
+      "center_joint": 0,
+      "center_19": 0,
+      "center_23": 0
+    }
+  },
+  "code_sha256": {
+    "run_natural_edge_centering.py": "019d15d0db6e0d338762239c73b93a4ad17c0a612971cb99959866e13b7a7dd9",
+    "analyze_natural_edge_centering.py": "a4a6721f364319db038fd6a4d768775be66b3ae7d6972ce70c7215620fc090a9"
+  },
+  "calibration_artifact": {
+    "sha256": "aaf2241f8958c34e213ed069dbfad074af3d6a2c3fc1abc7095b6ff519468450",
+    "size_bytes": 3036524,
+    "storage": "local and biggpu; excluded from Git"
+  }
+}
