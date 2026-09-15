@@ -1,0 +1,7 @@
+{
+  "n_rows": 2112,
+  "n_samples": 192,
+  "historical_joint_max_error": 0.0,
+  "baseline_condition_max_error": 0.0,
+  "bootstrap": "10000 paired actor resamples numpy seed20260915; unadjusted95%CI"
+}

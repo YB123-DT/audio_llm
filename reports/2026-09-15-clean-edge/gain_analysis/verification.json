@@ -1,0 +1,17 @@
+{
+  "n_samples": 192,
+  "n_rows": 960,
+  "n_actors": 24,
+  "checks": {
+    "alpha1_noop_max": 0.0,
+    "old_clean_parity_max": 0.0,
+    "clean_across_alpha_max": 0.0
+  },
+  "score_ties": {
+    "0.0": 0,
+    "0.5": 0,
+    "1.0": 0,
+    "1.5": 0,
+    "2.0": 0
+  }
+}

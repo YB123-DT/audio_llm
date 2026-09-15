@@ -63,3 +63,14 @@ Q5 已通过 forced-choice 和 activation patching 收窄，但仍未完成 rout
 | Q16的audio-source dependence主要来自decision直接读取，还是先写入audio/marker等其他query后传播？ | 在post17 audio swap下，blocks18–23的pre-o_proj按query加入A_current·(V_clean−V_current)，仅audio source非零；decision、audio、end-marker、non-decision、all五条件×192样本。 | Decision M=+0.06610，all=+0.06653；差值−0.000428 [−0.002036,+0.001176]。Non-decision M=−0.001845（CI跨0）；decision−non-decision=+0.067945 [+0.024225,+0.109851]。Edge-all与原source restore最大margin差4.29×10⁻⁶。 | 结果接近情况A：当前条件干预的主要margin效应位于后续audio-V→decision-query读取边。未看到大的非decision-query正向移除效应；但被读取的audio values此前仍可能经历传播/重编码，且实验未穷尽K/routing/residual间接路径。没有建立正式等价或可加的中介比例。 |
 
 [Edge restore报告](./2026-09-15-audio-edge/report.md) · [配对contrasts](./2026-09-15-audio-edge/analysis/edge_contrasts.csv) · [验证](./2026-09-15-audio-edge/verification.json)。没有更换source、训练插件或修改checkpoint。更细的block/head定位及跨prompt验证仍未执行。
+
+
+## Q18–Q20：自然edge信号、gain与block定位（2026-09-15）
+
+| 版本 | 核心问题 | 关键结果 | 问题变化与限制 |
+|---|---|---|---|
+| Q18：clean necessity | 自然audio-V→decision边是否携带正确emotion差异？ | 无donor的blocks18–23联合移除：DeltaC=+0.04923，actor CI [+0.00794,+0.09497]；59/96对为正。C_H=−0.58060、C_S=−0.62983。 | 弱的正确平均差异与共同SAD偏移并存；不能说自然边没有emotion信息，也不是每个context均一致。仅测试这些层的总下游效应。 |
+| Q19：clean gain | 放大自然边能否改善最终readout？ | alpha0/0.5/1/1.5/2的AUC为0.4979/0.5071/0.5212/0.5372/0.5493；全部预测SAD，accuracy均50%。alpha2相对1的AUC变化+0.02810，CI [+0.00271,+0.05111]。 | 相对排序改善有迹象，但alpha2绝对AUC CI [0.4992,0.5982]跨chance，pair gap提升CI跨0。尚不能归因于纯常数bias或声称gain已解决任务。 |
+| Q20：block-specific direct edge | donor patch效应在哪些后续block被读取？ | 单block18/19 M=+0.01439/+0.03066，各自CI高于0；累计18–19 M=+0.04407，18–23=+0.06610并精确复现历史joint。 | 18–19已有明显作用；未证明19优于其他block，后续累计增量CI跨0不等于无作用。层效应不可相加，区间未校正，仍限当前prompt/verbalizer/checkpoint。 |
+
+[完整报告](./2026-09-15-clean-edge/report.md) · [实验口径](./2026-09-15-clean-edge/experiment-spec.md) · [验证](./2026-09-15-clean-edge/verification.json)。本轮冻结推理，未拟合bias、阈值或最优gain，未训练。当前问题是：如何提高弱自然信号的稳定性与输出相关性，而不是仅寻找人工patch的传播路径。

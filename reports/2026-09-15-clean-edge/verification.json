@@ -1,0 +1,43 @@
+{
+  "local_tests": "36 passed, 14 skipped (torch unavailable)",
+  "remote_tests": "52 passed",
+  "compileall": "passed",
+  "shell_syntax": "passed",
+  "clean": {
+    "n_samples": 192,
+    "n_rows": 960,
+    "n_actors": 24,
+    "checks": {
+      "alpha1_noop_max": 0.0,
+      "old_clean_parity_max": 0.0,
+      "clean_across_alpha_max": 0.0
+    },
+    "score_ties": {
+      "0.0": 0,
+      "0.5": 0,
+      "1.0": 0,
+      "1.5": 0,
+      "2.0": 0
+    }
+  },
+  "block": {
+    "n_rows": 2112,
+    "n_samples": 192,
+    "historical_joint_max_error": 0.0,
+    "baseline_condition_max_error": 0.0,
+    "bootstrap": "10000 paired actor resamples numpy seed20260915; unadjusted95%CI"
+  },
+  "code_sha256": {
+    "scripts/run_clean_edge_gain.py": "34918acf39a9e3941356fc3abbe063991d968db28de6c69dcd7276ac834afb94",
+    "scripts/analyze_clean_edge_gain.py": "109899b68d5ab9a948fd2ef8366f508fdfd5fac28a23407341d78d8a634485df",
+    "scripts/run_block_direct_edge_restore.py": "60309e33981b2bb0137f28e7bb9739661eb137be36854af09182f397dd7c79c4",
+    "scripts/analyze_block_direct_edge.py": "182c3c47ea3eef00f55b8357bac871aa0ad167761ddd079585e0f22303955cfb"
+  },
+  "limitations": [
+    "One checkpoint/prompt/verbalizer; frozen inference",
+    "Unadjusted actor-cluster bootstrap CIs",
+    "Restore effects are not additive mediation fractions"
+  ],
+  "gain_runtime_checks": {},
+  "block_restore_runtime_checks": {}
+}

@@ -1,0 +1,5 @@
+{
+  "bootstrap": "10000 paired actor-cluster resamples, numpy seed20260915",
+  "auc": "Recomputed using cross-actor positive-negative concordance and resampled actor multiplicities; ties=0.5",
+  "intervals": "Unadjusted percentile95; no optimized bias, threshold or gain"
+}
