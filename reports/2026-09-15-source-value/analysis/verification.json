@@ -1,0 +1,11 @@
+{
+  "n_samples": 192,
+  "n_rows": 1344,
+  "numerical_checks": {
+    "prior_all_v_max_abs_error": 0.0,
+    "prompt_restore_no_effect_max": 0.0,
+    "other_vs_non_audio_max": 0.0,
+    "baseline_condition_consistency_max": 0.0
+  },
+  "tolerance": 0.0001
+}

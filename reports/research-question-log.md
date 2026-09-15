@@ -47,3 +47,11 @@ Q5 已通过 forced-choice 和 activation patching 收窄，但仍未完成 rout
 | **Q15：QK vs V** | Attention 的影响更依赖 routing 变化还是 projected value content？ | 恢复 decision Q+全部prefix K，与恢复全部prefix V对比。Joint QK移除−0.0236（CI跨0），V移除+0.0635；V−QK配对差+0.0871，CI [+0.0254,+0.1469]。Joint QKV closure误差0。 | 支持当前all-source干预下的value-content dependence；不是audio-only路径或自然emotion-specific机制的证明。不能声称routing无用，也不能把非加性移除量换算为独立中介百分比。当前问题收窄为：哪些source positions的value变化承载这个小margin效应？本轮未扩展执行该问题。 |
 
 完整证据：[本轮报告](./2026-09-15-residual-component/report.md)、[运行前口径](./2026-09-15-residual-component/experiment-spec.md)、[验证记录](./2026-09-15-residual-component/verification.json)。本轮还更正了旧报告的“controls分别显著性即可证明特异性”和“同一数据选择head属于预注册”表述。冻结模型，未训练。
+
+## Q16：Value effect 来自哪些 source positions？（2026-09-15）
+
+| 核心问题 | 实验 | 关键结果 | 问题收窄与限制 |
+|---|---|---|---|
+| 上轮all-V移除效应主要来自audio values，还是audio先写入非audio位置后间接传播？ | 固定post17 audio patch，blocks18–23按source恢复V：audio、prompt、other、non-audio、decision、结束标记、all；7条件×192样本。 | Audio M=+0.06653，all=+0.06351，prompt=0，other/non-audio=+0.000788（CI跨0）；audio−all=+0.003018 [0.000016,0.005939]；audio−non-audio=+0.065740 [0.021715,0.106847]。All-V与旧结果逐样本精确一致。 | 当前margin effect主要依赖audio-position values，没有大的非audio V中介效应。恢复作用于所有query，可同时阻断audio→other的首次写入，因此未独立证明audio→decision直达，也未排除所有multi-hop。后续问题是decision-query/edge-specific的audio V恢复能否复现该效应；本轮未扩展执行。 |
+
+[Source-specific报告](./2026-09-15-source-value/report.md) · [配对contrasts](./2026-09-15-source-value/analysis/source_contrasts.csv) · [验证](./2026-09-15-source-value/verification.json)。Audio-only略大于all-V及非零非加性项，提示不能将恢复效应相加解释为独立中介百分比。

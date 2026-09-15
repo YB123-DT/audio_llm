@@ -1,0 +1,22 @@
+{
+  "n_samples": 192,
+  "n_rows": 1344,
+  "numerical_checks": {
+    "prior_all_v_max_abs_error": 0.0,
+    "prompt_restore_no_effect_max": 0.0,
+    "other_vs_non_audio_max": 0.0,
+    "baseline_condition_consistency_max": 0.0
+  },
+  "tolerance": 0.0001,
+  "runner_hash_matches": true,
+  "remote_tests": "29 passed",
+  "local_tests": "23 passed, 4 skipped (torch unavailable)",
+  "syntax_checks": "Python compileall, bash -n, git diff --check",
+  "runtime_numerical_checks": {
+    "clean_candidate_parity_max": 1.52587890625e-05,
+    "patched_candidate_parity_max": 1.430511474609375e-05,
+    "self_audio_max": 0.0,
+    "component_noop_max": 0.0,
+    "pre_audio_prompt_v_max": 0.0
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "bootstrap_samples": 10000,
+  "seed": 20260915,
+  "unit": "actor cluster",
+  "effect": "donor_sign*(patched_margin-restored_margin), averaged within pair",
+  "scope": "source-specific V at all queries; not edge-specific mediation",
+  "equivalence": "No equivalence margin specified; confidence interval crossing zero does not establish equality"
+}
