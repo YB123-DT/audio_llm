@@ -1,0 +1,83 @@
+{
+  "remote_tests": "60 passed",
+  "local_tests": "42 passed,16 skipped (missing optional torch/sklearn dependencies)",
+  "compileall": "passed",
+  "shell_syntax": "passed",
+  "edge": {
+    "artifact": "edge_vectors.npz",
+    "sha256": "0796d412b527dd281198c6e06b164b0b8ae990d54713b1009cbaebfc7283d490",
+    "size_bytes": 4490120,
+    "shapes": {
+      "edge_updates": [
+        192,
+        6,
+        896
+      ],
+      "layers": [
+        6
+      ],
+      "sample_ids": [
+        192
+      ],
+      "clean_margins": [
+        192
+      ],
+      "d_lm": [
+        896
+      ],
+      "finalnorm_weight": [
+        896
+      ],
+      "d_lm_norm_weighted": [
+        896
+      ],
+      "final_decision_pre_norm": [
+        192,
+        896
+      ]
+    },
+    "all_numeric_arrays_finite": true,
+    "unique_sample_ids": 192,
+    "script_hash_matches": true,
+    "seed": 1234,
+    "attention_implementation": "sdpa",
+    "archive_location": "local and biggpu reports/2026-09-15-edge-representation; binary archive excluded from Git",
+    "verification_tests": {
+      "remote": "2 passed",
+      "local": "1 passed, 1 skipped (torch unavailable)"
+    }
+  },
+  "edge_numerical_checks": {
+    "attention_reconstruction_max": 1.1920928955078125e-05,
+    "source_decomposition_max": 1.1444091796875e-05,
+    "hooked_clean_parity_max": 0.0,
+    "candidate_parity_max": 1.52587890625e-05,
+    "historical_clean_parity_max": 0.0,
+    "norm_readout_parity_max": 2.86102294921875e-06
+  },
+  "sweep": {
+    "n_actors": 24,
+    "n_pairs": 96,
+    "bootstrap_replicates": 10000,
+    "seed": 20260915,
+    "simultaneous_method": "95th percentile max absolute centered bootstrap deviation across 24 layers; unstudentized actor-cluster bootstrap",
+    "simultaneous_radius": 0.08010787641008695,
+    "contrast_simultaneous_radius": 0.0708661983410517,
+    "peak_point_estimate_layer": 13,
+    "n_rows": 4608,
+    "layer17_historical_max_error": 0.0,
+    "baseline_across_layers_max_error": 0.0,
+    "final_layer_effect_max": 0.0
+  },
+  "probe": {
+    "folds": 444,
+    "oof_predictions": 3456,
+    "raw_coordinate_score_parity_max": 9.237055564881302e-14
+  },
+  "code_sha256": {
+    "extract_clean_edge_vectors.py": "febe23b8f693eaae8beefdf19dc3b7653e4d1da8604266da112dde2266a73828",
+    "analyze_edge_representation.py": "39890a26e0fe7eea6cb000b09ff7fd40b031fc11a2a534e33b0ad9082314b4da",
+    "run_full_audio_sweep.py": "b9af3fc4a70057a7158ad29eb614f43e3a0849ddfc7943f68205a23885475e8e",
+    "analyze_full_audio_sweep.py": "73a58a8e29545e9c5b52585032a4501fa37ff6236fb9fbbcb3aa57e89f551ea3"
+  }
+}

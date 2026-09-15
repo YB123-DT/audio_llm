@@ -1,0 +1,46 @@
+{
+  "n_samples": 192,
+  "n_pairs": 96,
+  "layers": [
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+  ],
+  "positions": {
+    "audio_start": 29,
+    "audio_length": 300,
+    "prefix_length": 331,
+    "decision_position": 330
+  },
+  "numerical_checks": {
+    "attention_reconstruction_max": 1.1920928955078125e-05,
+    "source_decomposition_max": 1.1444091796875e-05,
+    "hooked_clean_parity_max": 0.0,
+    "candidate_parity_max": 1.52587890625e-05,
+    "historical_clean_parity_max": 0.0,
+    "norm_readout_parity_max": 2.86102294921875e-06
+  },
+  "tolerance": 0.001,
+  "donor_used": false,
+  "intervention": null,
+  "vector_definition": "Per-layer W_o @ sum_audio A(decision,a) V(a); original clean QK and softmax denominator, o_proj bias excluded, no cross-layer sum",
+  "lm_direction_note": "Raw LM-head difference is not an effective earlier-layer gradient; norm-weighted direction only accounts for final RMSNorm gain, not intervening blocks or input-dependent normalization",
+  "prompt": "Listen to the speech. Is the speaker HAPPY or SAD? Answer only HAPPY or SAD.",
+  "happy_token_id": 6247,
+  "sad_token_id": 12421,
+  "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+  "model_parameters_frozen": true,
+  "torch_version": "2.5.1",
+  "transformers_version": "4.57.6",
+  "model_dtype": "torch.float32",
+  "script_sha256": "febe23b8f693eaae8beefdf19dc3b7653e4d1da8604266da112dde2266a73828",
+  "dependency_sha256": {
+    "run_audio_edge_restore.py": "bfcc8b299cb573f78c89b266fd7cf7b61472096368b2c0620ffbbe1cf2224dee",
+    "run_source_value_restore.py": "6c35d2ce39a41c5f0a7c1f6439b6802cb333e8095d9a62de78b6da6a2396fbfc"
+  },
+  "historical_reference": "reports/2026-09-15-clean-edge/gain.csv",
+  "historical_reference_sha256": "858b1b3d4a51aa337e82fc6a59081c74a450edc4ce6472b7f6a94174a8d5a6b8"
+}

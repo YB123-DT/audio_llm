@@ -1,0 +1,44 @@
+{
+  "artifact": "edge_vectors.npz",
+  "sha256": "0796d412b527dd281198c6e06b164b0b8ae990d54713b1009cbaebfc7283d490",
+  "size_bytes": 4490120,
+  "shapes": {
+    "edge_updates": [
+      192,
+      6,
+      896
+    ],
+    "layers": [
+      6
+    ],
+    "sample_ids": [
+      192
+    ],
+    "clean_margins": [
+      192
+    ],
+    "d_lm": [
+      896
+    ],
+    "finalnorm_weight": [
+      896
+    ],
+    "d_lm_norm_weighted": [
+      896
+    ],
+    "final_decision_pre_norm": [
+      192,
+      896
+    ]
+  },
+  "all_numeric_arrays_finite": true,
+  "unique_sample_ids": 192,
+  "script_hash_matches": true,
+  "seed": 1234,
+  "attention_implementation": "sdpa",
+  "archive_location": "local and biggpu reports/2026-09-15-edge-representation; binary archive excluded from Git",
+  "verification_tests": {
+    "remote": "2 passed",
+    "local": "1 passed, 1 skipped (torch unavailable)"
+  }
+}

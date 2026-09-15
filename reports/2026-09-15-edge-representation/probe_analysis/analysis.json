@@ -1,0 +1,22 @@
+{
+  "n_samples": 192,
+  "n_actors": 24,
+  "layers": [
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+  ],
+  "input_sha256": "0796d412b527dd281198c6e06b164b0b8ae990d54713b1009cbaebfc7283d490",
+  "sklearn_version": "1.7.2",
+  "bootstrap": 10000,
+  "seed": 20260915,
+  "uncertainty": "Actor-cluster percentile 95% conditional on trained folds; models are not refit in bootstrap; unadjusted intervals.",
+  "preprocessing": "Train-only StandardScaler; logistic regression C=1 lbfgs max_iter=5000; happy positive; no tuning.",
+  "geometry": "w_raw=coef/scale; cosine with raw or final-RMSNorm-weighted unembedding difference is descriptive. Early edge updates undergo downstream computation; final RMS denominator is state dependent. Near-zero cosine alone does not prove readout failure.",
+  "comparability": "Train-only standardization and leave-one-actor-out differ from earlier unstandardized fixed speaker split; scores are not numerically matched protocols. Dimension896 exceeds per-fold training count, so probe direction depends on regularization and is not unique.",
+  "cross_layer": "No summation or concatenation.",
+  "auc": "Pooled OOF margins from different fitted folds; fold AUC also provided; raw edge dot products have no calibrated threshold."
+}

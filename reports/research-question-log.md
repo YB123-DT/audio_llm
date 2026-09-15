@@ -74,3 +74,14 @@ Q5 已通过 forced-choice 和 activation patching 收窄，但仍未完成 rout
 | Q20：block-specific direct edge | donor patch效应在哪些后续block被读取？ | 单block18/19 M=+0.01439/+0.03066，各自CI高于0；累计18–19 M=+0.04407，18–23=+0.06610并精确复现历史joint。 | 18–19已有明显作用；未证明19优于其他block，后续累计增量CI跨0不等于无作用。层效应不可相加，区间未校正，仍限当前prompt/verbalizer/checkpoint。 |
 
 [完整报告](./2026-09-15-clean-edge/report.md) · [实验口径](./2026-09-15-clean-edge/experiment-spec.md) · [验证](./2026-09-15-clean-edge/verification.json)。本轮冻结推理，未拟合bias、阈值或最优gain，未训练。当前问题是：如何提高弱自然信号的稳定性与输出相关性，而不是仅寻找人工patch的传播路径。
+
+
+## Q21–Q23：真实edge representation与全层杠杆验证（2026-09-15）
+
+| 版本 | 核心问题 | 实验与关键结果 | 问题变化与限制 |
+|---|---|---|---|
+| Q21：edge decodability | 自然audio→decision update是否跨speaker/text高度可读？ | 分别提取blocks18–23 post-o_proj audio更新。Speaker accuracy66.7–72.9%；statement49.5–57.3%；joint49.5–58.3%。Joint19 pooled AUC0.5917、within-fold0.6615。 | 未出现跨文本80–90%可读性；有一定排序信息但阈值迁移弱。不能用历史不同probe协议直接量化“信息损失”。 |
+| Q22：readout alignment | 外部probe方向与LM方向是否脱节？ | 将训练标准化权重还原到residual坐标。Joint平均raw cosine约−0.009至+0.070；block23 LM-axis AUC0.5596，与joint pooled AUC0.5574点估计接近；最终模型AUC0.5212。 | 低cosine不能单独证明alignment failure，高维各向异性及后续变换仍影响解释。当前更像有一定edge信息，但跨context排序/阈值与最终使用都不理想。未定位纯LM-head故障。 |
+| Q23：selection验证 | Layer17是孤立峰，还是更广泛窗口的一点？ | 全24层matched双向audio patch，96pairs、actorbootstrap。点估计峰13 CE0.08301，11–13均约0.08；17为0.04555并精确复现。 | 17不是点估计峰或明显孤立尖峰；simultaneous band仅11/13排除0，但13−17配对pointwise CI仍跨0，不能声称唯一峰或13显著更强。17条件路径成立，不等于特有瓶颈。 |
+
+[完整报告](./2026-09-15-edge-representation/report.md) · [验证](./2026-09-15-edge-representation/verification.json)。下一研究问题应区分edge中的context-conditioned读出、阈值迁移及后续计算，而不预设readout alignment failure；本轮未扩展训练或校准实验。
