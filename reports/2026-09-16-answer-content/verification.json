@@ -1,0 +1,25 @@
+{
+  "remote_tests": "90 passed",
+  "local_tests": "65 passed, 23 skipped (optional runtime dependencies unavailable)",
+  "compileall": "passed",
+  "reproduce_shell_syntax": "passed",
+  "n_samples": 192,
+  "n_actors": 24,
+  "n_readouts": 25,
+  "n_unique_within_fits": 1200,
+  "n_oof_rows": 9600,
+  "unique_complete_oof": true,
+  "fold_membership_checks": "48 folds; same 4 test samples; same 92 training size; both exclude test actor; within same statement / cross other statement; balanced test classes",
+  "cached_cross_predictions_exact": true,
+  "cross_module_b_metrics_max_difference": 0.0,
+  "sources_sha256": {
+    "reports/2026-09-16-module-b/decoder_states.npz": "c4bd68851b6598db8edc4fd831a693e1a131b9548817b1242503678fc74c1097",
+    "reports/2026-09-16-module-b/metadata.csv": "9b1146797bfe77164f2bf0192070411a4903affe873532cbe3bc1156b8b35d85",
+    "reports/2026-09-16-module-b/analysis/oof_predictions.csv": "12b5691b5704354339ffd579d4a1708539f090a23d8661430aab90efaf12f4f8",
+    "reports/2026-09-16-module-b/analysis/summary.csv": "77f0d6888dd6bb0f03390b5902d521ed0527e01f64b3746f1d12ad01ea8916d7",
+    "/data2/yb/paper/audio_llm/scripts/analyze_answer_content.py": "bf0e934f846525e8b1538bd854a9859e206c2202e1d2042c7c8caaea03985b90"
+  },
+  "bootstrap": "10000 paired actor draws; within and cross and both statements share actor multiplicities; fixed fitted probes; pointwise unadjusted",
+  "model_forward_count": 0,
+  "remaining_limits": "Two statements, 24 actors; 4 samples/fold; not a direction-rotation or decoder causal mechanism test; combined block23 gap CI crosses zero."
+}

@@ -1,0 +1,22 @@
+{
+  "n_samples": 192,
+  "n_actors": 24,
+  "n_readouts": 25,
+  "n_new_probe_fits": 1200,
+  "seed": 20260915,
+  "bootstrap": 10000,
+  "sklearn_version": "1.7.2",
+  "answer_head_parity_max": 1.8637040652969006e-06,
+  "cross_module_b_metric_difference_max": 0.0,
+  "sources_sha256": {
+    "reports/2026-09-16-module-b/decoder_states.npz": "c4bd68851b6598db8edc4fd831a693e1a131b9548817b1242503678fc74c1097",
+    "reports/2026-09-16-module-b/metadata.csv": "9b1146797bfe77164f2bf0192070411a4903affe873532cbe3bc1156b8b35d85",
+    "reports/2026-09-16-module-b/analysis/oof_predictions.csv": "12b5691b5704354339ffd579d4a1708539f090a23d8661430aab90efaf12f4f8",
+    "reports/2026-09-16-module-b/analysis/summary.csv": "77f0d6888dd6bb0f03390b5902d521ed0527e01f64b3746f1d12ad01ea8916d7",
+    "/data2/yb/paper/audio_llm/scripts/analyze_answer_content.py": "bf0e934f846525e8b1538bd854a9859e206c2202e1d2042c7c8caaea03985b90"
+  },
+  "protocol": "Complete post-block answer states 0..23 and separate final RMSNorm. Within: train 23 other actors, same statement; cross: reuse Module B joint train 23 other actors, other statement. Both 92 train / identical 4 test. Train-only StandardScaler; C=1 lbfgs max_iter=5000; happy=1; zero predicts sad.",
+  "primary_metric": "Mean actor x statement fold AUC. Combined is macro mean of two statements, each mean of 24 actor-fold AUCs. Pooled OOF AUC separately reported and can reflect offsets between fitted models.",
+  "uncertainty": "Paired actor-cluster percentile 95% bootstrap, 10000 draws by default, both statements retained together, same draws in within and cross then subtract; fixed fitted probes, no refits, pointwise unadjusted.",
+  "scope": "Observational linear readability, not causal explanation or proof of direction rotation. No model forward or tuning."
+}

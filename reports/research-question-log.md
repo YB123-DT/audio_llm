@@ -124,3 +124,12 @@ Q5 已通过 forced-choice 和 activation patching 收窄，但仍未完成 rout
 | Projector的强跨文本情绪信息进入Qwen后，是突然丢失、逐层减弱，还是只留在audio位置？ | 复用Module A的192样本/fold/train-only标准化/C=1 probe，对24个完整block的audio mean与完整answer state统一比较。Joint answer pooled AUC：block0 0.9154→block1 0.7885→block6 0.6033→block23 0.5412；audio的全部层mean within-fold AUC保持0.9583–0.9844。 | Answer早期已可读，随后分阶段、非单调减弱；audio排序信息持续保留。不能说从未到达answer，也不能由pooled曲线定位唯一因果故障层。Audio中后期pooled AUC下降/最终回升与within-fold轨迹不一致，不能直接称为信息丢失/恢复。 |
 
 [统一曲线与判断](./2026-09-16-module-b/report.md) · [验证](./2026-09-16-module-b/verification.json)。旧逐层cache不兼容，补192条各一次冻结decoder forward；Projector/native margin及raw最后answer端点精确核对。实际GPU final RMSNorm与Module A CPU重建的微小差异及其指标变化全部披露；无patch、校准或插件训练。
+
+
+## Q30：完整answer的within-statement读出（2026-09-16）
+
+| 核心问题 | 匹配协议与结果 | 判断与限制 |
+|---|---|---|
+| 后期跨文本下降是句内线性可读性也退化，还是只剩content-conditioned code？ | 复用Module B answer states；within/cross均训练其他23actors、92样本，测试同actor同statement4样本。主指标mean actor-fold AUC：within block0 0.9375→block23 0.7083；cross block23 0.6042，G+0.1042 CI[−0.0052,0.2083]。N：within0.7031/cross0.5938，G+0.1094 CI[0.0052,0.2135]。 | 句内下降与额外跨文本损失同时存在。Block23测试01的G+0.2813，测试02的G−0.0729且CI跨零，不能称为两句对称旋转。合并block23 gap不确定，N仅点态未校正区间略正；尚无具体decoder因果机制或direction旋转证明。 |
+
+[曲线与报告](./2026-09-16-answer-content/report.md) · [验证](./2026-09-16-answer-content/verification.json)。仅CPU外部probe，未重新forward；pooled AUC另报，不与折内平均AUC混算gap。
