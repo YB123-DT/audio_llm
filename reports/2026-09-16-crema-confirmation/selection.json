@@ -1,0 +1,38 @@
+{
+  "source": "https://github.com/CheyneyComputerScience/CREMA-D",
+  "revision": "1658cd342dff90010aa843eaeebd53610a08b1dc",
+  "tree_sha256": "a635b58000ec592fdc4114ce20b3087d8ddd76db436c8bf2d2f3c9d1d5a9b52c",
+  "manifest_sha256": "b7db3dff0af5a0e18a435ebbe888181d001501a190f4bba9f937ed2c8c6993a3",
+  "n_samples": 1936,
+  "n_pairs": 968,
+  "n_actors": 88,
+  "statements": [
+    "DFA",
+    "IOM",
+    "ITH",
+    "ITS",
+    "IWL",
+    "IWW",
+    "MTI",
+    "TAI",
+    "TIE",
+    "TSI",
+    "WSI"
+  ],
+  "excluded_actors": {
+    "1008": [
+      "WSI"
+    ],
+    "1009": [
+      "MTI"
+    ],
+    "1019": [
+      "ITH"
+    ]
+  },
+  "selection": "All actors with complete happy/sad pairs for all eleven XX statements; selected only from filenames before model outputs. No quality/rating/performance-based exclusions.",
+  "intensity": "XX means unspecified; it is NOT a controlled equal acoustic intensity.",
+  "repetition": "01 is an interface placeholder: CREMA-D provides one file per selected actor/statement/emotion cell, not repeated takes.",
+  "label": "Intended acted emotion encoded in filenames; not crowd-vote relabeling.",
+  "source_actor_identity": "Separate corpus and source actor IDs; cross-corpus real-person identity overlap is not independently established."
+}
