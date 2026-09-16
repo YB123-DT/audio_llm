@@ -151,3 +151,12 @@ Q5 已通过 forced-choice 和 activation patching 收窄，但仍未完成 rout
 | 早期Attention更新是否对answer线性可读性下降有因果贡献？ | 仅阻断answer行，clean/no-attn/no-MLP；主终点block6 within mean actor-fold AUC为0.7656/0.9219/0.7552。ΔA+0.1563 CI[0.0729,0.2448]；ΔA−M+0.1667 CI[0.0677,0.2865]。所有非answer位置逐层bitwise保持clean。 | 支持指定干预下early answer-position Attention updates对线性可读性损失的因果贡献；未定位lexical/audio/prompt来源。Final状态ΔA+0.0417 CI[0,0.0885]，未形成可靠最终修复证据，未检验原LM行为改善。完成三个固定条件后停止，无追加搜索。 |
 
 [最后一次固定干预报告](./2026-09-16-early-answer-causal/report.md) · [验证](./2026-09-16-early-answer-causal/verification.json)。区间为配对actor-bootstrap、固定拟合probe、未多重校正；statement02主对比子组CI下界触及零，保留泛化限制。
+
+
+## Q33：独立语料确认固定早期干预（2026-09-16）
+
+| 核心问题 | 冻结协议与结果 | 判断与可信范围 |
+|---|---|---|
+| 换语料演员与更多句子后，早期 answer-position Attention 更新的可读性效应是否复现？ | 运行前提交协议与样本；CREMA-D XX、88actors、11句、1936音频。沿用blocks1–6、三条件、block6终点。Clean/no-attn/no-MLP W6=0.9236/0.9618/0.9329；ΔA+0.0382 CI[0.0207,0.0558]，ΔA−M+0.0289 CI[0.0124,0.0455]，均满足预定判据。 | 固定新语料样本上的平均干预效应复现，幅度小于RAVDESS；11句中7正、2零、2负，不是逐句一致。Final ΔA−0.0134 CI[−0.0331,0.0052]，没有最终状态改善证据。XX为强度未指定，同checkpoint且within-statement probe，不能推广到其他模型或未见文本的分类器迁移。 |
+
+[独立确认报告](./2026-09-16-crema-confirmation/report.md) · [事前冻结协议](./2026-09-16-crema-confirmation/experiment-spec.md) · [验证](./2026-09-16-crema-confirmation/verification.json)。RAVDESS保留为发现数据，未与确认数据合并；新结果未用于重选窗口或样本。按约定停止本轮。

@@ -1,0 +1,37 @@
+{
+  "date": "2026-09-16",
+  "status": "passed",
+  "protocol_commit": "6ec6df5",
+  "implementation_commit": "1be6d4f",
+  "n_samples": 1936,
+  "n_actors": 88,
+  "n_statements": 11,
+  "manifest_sha256": "b7db3dff0af5a0e18a435ebbe888181d001501a190f4bba9f937ed2c8c6993a3",
+  "representations_sha256": "01db6f80235acb088b9a10ebbe9a8a962789df58c6a495d1e89331d4f2ed5e77",
+  "extraction_checks": {
+    "nonanswer_block_comparisons": 92928,
+    "suppressed_update_calls": 23232,
+    "unhooked_clean_final_max": 0.0
+  },
+  "audio_checksums_verified": 1936,
+  "source_hashes_verified": true,
+  "oof_unique_rows": 11616,
+  "folds_verified": 5808,
+  "membership_rows_verified": 170368,
+  "independent_auc_summary_rows_verified": 72,
+  "independent_paired_auc_contrast_rows_verified": 72,
+  "bootstrap": 10000,
+  "tests": {
+    "remote_passed": 127,
+    "local_passed": 97,
+    "local_skipped": 27,
+    "reason_for_skips": "optional runtime dependencies unavailable"
+  },
+  "synthetic_end_to_end_probe_fits": 72,
+  "compile_and_shell_syntax": "passed",
+  "scope": "All metric comparisons use fixed fitted probes and fixed selected statements; no native LM-head improvement evaluated.",
+  "figure_visual_check": "passed: labels/intervals visible; primary and secondary separated",
+  "local_audio_hashes_match_remote_inventory": 1936,
+  "unique_audio_sha256": 1936,
+  "independent_code_and_claim_review": "PASS: intervention semantics, bootstrap, source artifacts, all reported numbers and primary/secondary interpretation"
+}

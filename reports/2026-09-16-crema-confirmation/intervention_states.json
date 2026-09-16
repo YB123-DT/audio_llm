@@ -1,0 +1,93 @@
+{
+  "dataset": "CREMA-D",
+  "seed": 1234,
+  "n_samples": 1936,
+  "conditions": [
+    "clean",
+    "no_attn",
+    "no_mlp"
+  ],
+  "target_blocks": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "positions": {
+    "audio_start": 29,
+    "audio_length": 300,
+    "prefix_length": 331,
+    "decision_position": 330
+  },
+  "checks": {
+    "nonanswer_block_comparisons": 92928,
+    "suppressed_update_calls": 23232,
+    "unhooked_clean_final_max": 0.0
+  },
+  "shapes": {
+    "sample_ids": [
+      1936
+    ],
+    "conditions": [
+      3
+    ],
+    "block6": [
+      1936,
+      3,
+      896
+    ],
+    "final_answer": [
+      1936,
+      3,
+      896
+    ],
+    "clean_margins": [
+      1936
+    ],
+    "d_lm": [
+      896
+    ]
+  },
+  "prompt": "Listen to the speech. Is the speaker HAPPY or SAD? Answer only HAPPY or SAD.",
+  "happy_token_id": 6247,
+  "sad_token_id": 12421,
+  "decoder_forwards_per_sample": 3,
+  "additional_unhooked_validation_forwards": 1,
+  "model_parameters_frozen": true,
+  "torch_version": "2.5.1",
+  "transformers_version": "4.57.6",
+  "dtype": "torch.float32",
+  "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+  "state_semantics": {
+    "block6": "Complete answer post-block6 residual",
+    "final_answer": "Complete final answer after terminal RMSNorm"
+  },
+  "intervention": "Zero answer row of self_attn or mlp update before residual addition at zero-based blocks1..6. Every non-answer row at every block must remain bitwise equal to clean.",
+  "decoder_forward_source": "    @deprecate_kwarg(\"past_key_value\", new_name=\"past_key_values\", version=\"4.58\")\n    def forward(\n        self,\n        hidden_states: torch.Tensor,\n        attention_mask: Optional[torch.Tensor] = None,\n        position_ids: Optional[torch.LongTensor] = None,\n        past_key_values: Optional[Cache] = None,\n        use_cache: Optional[bool] = False,\n        cache_position: Optional[torch.LongTensor] = None,\n        position_embeddings: Optional[tuple[torch.Tensor, torch.Tensor]] = None,  # necessary, but kept here for BC\n        **kwargs: Unpack[TransformersKwargs],\n    ) -> torch.Tensor:\n        residual = hidden_states\n        hidden_states = self.input_layernorm(hidden_states)\n        # Self Attention\n        hidden_states, _ = self.self_attn(\n            hidden_states=hidden_states,\n            attention_mask=attention_mask,\n            position_ids=position_ids,\n            past_key_values=past_key_values,\n            use_cache=use_cache,\n            cache_position=cache_position,\n            position_embeddings=position_embeddings,\n            **kwargs,\n        )\n        hidden_states = residual + hidden_states\n\n        # Fully Connected\n        residual = hidden_states\n        hidden_states = self.post_attention_layernorm(hidden_states)\n        hidden_states = self.mlp(hidden_states)\n        hidden_states = residual + hidden_states\n        return hidden_states\n",
+  "sha256": {
+    "/data2/yb/paper/audio_llm/scripts/run_crema_confirmation.py": "69124b162dee99aee27492c757d918d16cb26a454364c19b91f054813b693e1d",
+    "/data2/yb/paper/audio_llm/scripts/run_activation_patching.py": "63fcae20486c0dc659a7b13b3c7a9b6b9817ed724d41936a940c5a66945aa2fd",
+    "/data2/yb/paper/audio_llm/scripts/run_early_answer_ablation.py": "8947c643ddbd3ee0e534c32744744802c3441b3d95dfa380a6961e7efe42ae3d",
+    "/data2/yb/paper/audio_llm/scripts/slam_omni_diagnostics.py": "b52100daca00a3c06db69c3f1cdba7c2a346e8b6a6f2c8e17ded26af67793d4b",
+    "reports/2026-09-16-crema-confirmation/manifest.csv": "b7db3dff0af5a0e18a435ebbe888181d001501a190f4bba9f937ed2c8c6993a3",
+    "reports/2026-09-16-crema-confirmation/audio_checksums.csv": "1f5fcebe5795420b83a80920d0ddf9975ea839d23ff1fffb06bd4047d65b9f7a",
+    "/data2/yb/paper_runtime_models/whisper/small.pt": "9ecf779972d90ba49c06d968637d720dd632c55bbf19d441fb42bf17a411e794",
+    "/data2/yb/paper/SLAM-Omni-0.5B/model.pt": "601055c1d7022f076a29f1c22693aa6038083631f54e51204f3099a4ec37249e",
+    "/data2/yb/paper_runtime_models/Qwen2-0.5B/config.json": "b2388df676bbbe4f6aae6b617bdfa6e7c471c7a5b23862baae3dfbf85a5fe9ef",
+    "/data2/yb/paper_runtime_models/Qwen2-0.5B/tokenizer.json": "f7c9b2dba4a296b1aa76c16a34b8225c0c118978400d4bb66bff0902d702f5b8",
+    "/data2/yb/paper_runtime_models/Qwen2-0.5B/tokenizer_config.json": "80d64fccf954f022eb43b7425eb45a133cbb92c76a5f24d4cea6dbe3d45548d9",
+    "/data2/yb/reproduction_envs/light-mer-clean/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py": "a59fa06524227361fb401baf4d177124a27aec146bc01ec931235a9abbab17cb"
+  },
+  "output_sha256": "01db6f80235acb088b9a10ebbe9a8a962789df58c6a495d1e89331d4f2ed5e77",
+  "resume_fingerprint": "1abfb9ac55034fce86f55f870a318d03d3c6b420e092795e40e8f1593b0e4079",
+  "runtime_fingerprint_fields": {
+    "torch": "2.5.1",
+    "transformers": "4.57.6",
+    "numpy": "1.26.4",
+    "dtype": "torch.float32",
+    "seed": 1234
+  },
+  "audio_checksums_verified": 1936
+}
