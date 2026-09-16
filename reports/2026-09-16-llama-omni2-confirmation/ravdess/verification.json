@@ -1,0 +1,44 @@
+{
+  "status": "PASS",
+  "audit_script_sha256": "f885eaaad4c3aafbad017bad53b1f0497ff0b3dd6ff94a874f3e8145ec9e8315",
+  "dataset": "ravdess",
+  "n_samples": 192,
+  "n_actors": 24,
+  "n_statements": 2,
+  "n_repetitions": 2,
+  "manifest_sha256": "c1894d6dc765947521254a62ef7cc582519b0110acc52e6a6225be9806bf74d6",
+  "states_sha256": "8edbd5e2d8a4053641e2b697ceaffb0f02f5cf3d1ef0792459df79571d7547bc",
+  "nonanswer_checks": 9216,
+  "suppression_checks": 2304,
+  "oof_records": 1152,
+  "fold_membership_rows": 4608,
+  "independently_recomputed_auc_summaries": 18,
+  "independently_recomputed_paired_auc_contrasts": 18,
+  "bootstrap": 10000,
+  "seed": 20260915,
+  "limits": "Artifact audit, no probe refits; pooled AUC and accuracy not independently recomputed.",
+  "primary": [
+    {
+      "endpoint": "block6",
+      "statement": "combined",
+      "contrast": "delta_A",
+      "left": "no_attn",
+      "right": "clean",
+      "metric": "mean_within_fold_auc",
+      "mean": "-0.03125",
+      "ci_low": "-0.08854166666666663",
+      "ci_high": "0.02083333333333326"
+    },
+    {
+      "endpoint": "block6",
+      "statement": "combined",
+      "contrast": "delta_A_minus_M",
+      "left": "no_attn",
+      "right": "no_mlp",
+      "metric": "mean_within_fold_auc",
+      "mean": "-0.00520833333333337",
+      "ci_low": "-0.07291666666666663",
+      "ci_high": "0.05729166666666674"
+    }
+  ]
+}

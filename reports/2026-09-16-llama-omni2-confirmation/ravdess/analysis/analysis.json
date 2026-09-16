@@ -1,0 +1,66 @@
+{
+  "model": "LLaMA-Omni2-0.5B",
+  "dataset": "ravdess",
+  "n_repetitions": 2,
+  "n_samples": 192,
+  "n_actors": 24,
+  "n_statements": 2,
+  "actors": [
+    "01",
+    "02",
+    "03",
+    "04",
+    "05",
+    "06",
+    "07",
+    "08",
+    "09",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21",
+    "22",
+    "23",
+    "24"
+  ],
+  "statements": [
+    "01",
+    "02"
+  ],
+  "conditions": [
+    "clean",
+    "no_attn",
+    "no_mlp"
+  ],
+  "endpoints": [
+    "block6",
+    "final_answer"
+  ],
+  "n_probe_fits": 288,
+  "clean_probe_fits_reused": 0,
+  "seed": 20260915,
+  "bootstrap": 10000,
+  "sklearn_version": "1.7.2",
+  "numpy_version": "1.26.4",
+  "sources_sha256": {
+    "reports/2026-09-16-llama-omni2-confirmation/ravdess/intervention_states.npz": "8edbd5e2d8a4053641e2b697ceaffb0f02f5cf3d1ef0792459df79571d7547bc",
+    "artifacts/ravdess_happy_sad_intensity01.csv": "c1894d6dc765947521254a62ef7cc582519b0110acc52e6a6225be9806bf74d6",
+    "/data2/yb/paper/audio_llm/scripts/analyze_model_replication.py": "93be3233241fae58e38964a9ffc7411069da594622e4305461e8a9fb909ada7d",
+    "/data2/yb/paper/audio_llm/scripts/analyze_early_answer_causal.py": "89714e2a87890ececbfa8a4f7275ef3608e7f7f0e7736305b58d64c96823c03c",
+    "/data2/yb/paper/audio_llm/scripts/analyze_answer_content.py": "bf0e934f846525e8b1538bd854a9859e206c2202e1d2042c7c8caaea03985b90",
+    "/data2/yb/paper/audio_llm/scripts/analyze_edge_representation.py": "39890a26e0fe7eea6cb000b09ff7fd40b031fc11a2a534e33b0ad9082314b4da"
+  },
+  "protocol": "Within-statement leave-one-actor-out: 92 train, 4 test. Train-only StandardScaler, C=1 lbfgs max_iter=5000, happy=1; all conditions independently fitted with identical splits.",
+  "primary": "Block6 mean actor x statement fold AUC; direct paired contrasts no_attn-clean and no_attn-no_mlp. Equal actor and statement weights; repetitions pooled within each held-out actor/statement fold.",
+  "secondary": "Final normalized answer-state readability; pooled OOF AUC, accuracy, and no_mlp-clean descriptive. No native LM-head performance claim.",
+  "uncertainty": "Shared paired actor-cluster percentile 95% bootstrap across conditions/endpoints/statements; all statements retained per actor. Fixed fitted probes, no bootstrap refits; unadjusted intervals conditional on the fixed selected statements (statements are not resampled).",
+  "scope": "Second-checkpoint replication on frozen existing datasets, fixed zero-based blocks1\u20136; no layer or condition reselection. This is not a cross-architecture claim. Within-statement probes do not establish classifier transfer to unseen statements."
+}

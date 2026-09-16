@@ -160,3 +160,12 @@ Q5 已通过 forced-choice 和 activation patching 收窄，但仍未完成 rout
 | 换语料演员与更多句子后，早期 answer-position Attention 更新的可读性效应是否复现？ | 运行前提交协议与样本；CREMA-D XX、88actors、11句、1936音频。沿用blocks1–6、三条件、block6终点。Clean/no-attn/no-MLP W6=0.9236/0.9618/0.9329；ΔA+0.0382 CI[0.0207,0.0558]，ΔA−M+0.0289 CI[0.0124,0.0455]，均满足预定判据。 | 固定新语料样本上的平均干预效应复现，幅度小于RAVDESS；11句中7正、2零、2负，不是逐句一致。Final ΔA−0.0134 CI[−0.0331,0.0052]，没有最终状态改善证据。XX为强度未指定，同checkpoint且within-statement probe，不能推广到其他模型或未见文本的分类器迁移。 |
 
 [独立确认报告](./2026-09-16-crema-confirmation/report.md) · [事前冻结协议](./2026-09-16-crema-confirmation/experiment-spec.md) · [验证](./2026-09-16-crema-confirmation/verification.json)。RAVDESS保留为发现数据，未与确认数据合并；新结果未用于重选窗口或样本。按约定停止本轮。
+
+
+## Q34：第二个同族模型的双语料固定窗口复验（2026-09-16）
+
+| 核心问题 | 冻结协议与结果 | 判断与可信范围 |
+|---|---|---|
+| SLAM 上的早期 answer-Attention 可读性效应能否迁移到 LLaMA-Omni2-0.5B？ | 固定 blocks1–6、三条件、完整 block6 answer、同样本/折/probe。RAVDESS clean/no-attn/no-MLP=0.9479/0.9167/0.9219；ΔA−0.0313 CI[−0.0885,0.0208]，ΔA−M−0.0052 CI[−0.0729,0.0573]。CREMA-D=0.9329/0.9618/0.9380；ΔA+0.0289 CI[0.0103,0.0486]，ΔA−M+0.0238 CI[0.0093,0.0382]。 | CREMA-D 满足预定复现判据，RAVDESS 不满足；不能宣称双语料复现或同族模型普遍成立。CREMA 11句9正2负。Final ΔA 在两语料均有正的次要区间，但不能替代 block6 主终点，也不是 LM 原生行为改善。当前 4.57.6/float32 环境内官方路径一致，不等于已验证官方4.43.4/BF16等价性。 |
+
+[双模型双语料报告](./2026-09-16-llama-omni2-confirmation/report.md) · [事前协议](./2026-09-16-llama-omni2-confirmation/experiment-spec.md) · [验证](./2026-09-16-llama-omni2-confirmation/verification.json)。仅新增 checkpoint/实现，仍属 speech-prefix/Qwen 同族；未据结果重选层、样本或主终点，未扩展路径搜索、校准或插件。

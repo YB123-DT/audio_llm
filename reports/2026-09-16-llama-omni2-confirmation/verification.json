@@ -1,0 +1,23 @@
+{
+  "artifact_status": "PASS",
+  "n_samples": 2128,
+  "independent_audits": [
+    "ravdess/verification.json",
+    "crema-d/verification.json"
+  ],
+  "primary_replication_criterion_met": {
+    "ravdess": false,
+    "crema-d": true
+  },
+  "both_datasets_replicate": false,
+  "scope": "Fixed blocks1\u20136, within-statement actor-held-out probes; no native-LM behavior or cross-architecture claim.",
+  "implementation_tests": {
+    "remote_full_suite_passed": 140,
+    "audit_script": "Compiled and run on both complete result sets"
+  },
+  "source_commits": {
+    "protocol": "fa53398",
+    "runtime": "82ed228",
+    "existing_ffmpeg_path_fix": "a5d4aa0"
+  }
+}
