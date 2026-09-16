@@ -1,0 +1,16 @@
+{
+  "legacy_answer_rejected_margin_max": 0.7586999192627282,
+  "answer_source": "Current clean extraction full final_decision_pre_norm reconstructed with original finalnorm_weight and official config RMSNorm epsilon; not edge update.",
+  "rms_norm_eps": 1e-06,
+  "projector_source": "/data2/yb/audio_llm_runs/ravdess_happy_sad_intensity01_systemprompt/hidden/representations.pt",
+  "projector_compatibility": "Requires separate fresh projector provenance spotcheck; see interface audit.",
+  "prompt": "Listen to the speech. Is the speaker HAPPY or SAD? Answer only HAPPY or SAD.",
+  "checkpoint": "/data2/yb/paper/SLAM-Omni-0.5B/model.pt",
+  "sources_sha256": {
+    "/data2/yb/audio_llm_runs/ravdess_happy_sad_intensity01_systemprompt/hidden/representations.pt": "c0653a511a5377a7f7836716442fb93bbaa75e78ffc94dd387a21d95e2e7c42c",
+    "/data2/yb/audio_llm_runs/ravdess_happy_sad_intensity01_systemprompt/hidden/metadata.csv": "9b1146797bfe77164f2bf0192070411a4903affe873532cbe3bc1156b8b35d85",
+    "reports/2026-09-15-edge-representation/edge_vectors.npz": "0796d412b527dd281198c6e06b164b0b8ae990d54713b1009cbaebfc7283d490",
+    "/data2/yb/paper_runtime_models/Qwen2-0.5B/config.json": "b2388df676bbbe4f6aae6b617bdfa6e7c471c7a5b23862baae3dfbf85a5fe9ef",
+    "reports/2026-09-15-edge-representation/edge_vectors_run.json": "e39ac01d63a29799a592efe78742706f389c99925f9cee56ca79e1c5ad647093"
+  }
+}

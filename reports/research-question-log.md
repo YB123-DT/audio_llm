@@ -105,3 +105,13 @@ Q5 已通过 forced-choice 和 activation patching 收窄，但仍未完成 rout
 | 外部probe的offset修正能否转化为模型自身emotion读出的改善？ | 用其他23actors、无emotion标签估计每statement clean edge均值；在post-o_proj decision行加reference−mu_s，联合18–23及单独19/23。固定单token LM readout。 | 联合AUC0.5212→0.5126，Δ−0.00857 [−0.01617,−0.00033]；gap0.03258→0.02159，变化CI跨0；common shift−0.13683。全部条件192/192 SAD，accuracy50%。单独23 AUC0.5275，变化CI跨0。 | 简单clean-mean offset校正不足以修复自然readout；外部probe的阈值证据不能直接归因为原LM失败主因。已知statement、无标签target校准、固定clean均值及后续动态变化限制解释；未证明offset完全无关或故障只在LM head。 |
 
 [完整报告](./2026-09-15-natural-edge-centering/report.md) · [验证](./2026-09-15-natural-edge-centering/verification.json)。均值按actor隔离，模型冻结、无donor，无新attention路径搜索或模型训练。
+
+
+## Q28：模块A统一基线与任务接口（2026-09-16）
+
+| 核心问题 | 可比协议与结果 | 判断边界 |
+|---|---|---|
+| 高上游probe、低edge probe与低输出分数能否定位利用失败？ | 改为同fold/train-only标准化，比较projector、完整final answer state及native head。Joint accuracy/AUC分别90.1%/0.9667、50.5%/0.5393、50.0%/0.5212。完整回答状态joint within-fold AUC0.5990。 | 弱跨文本线性可读性已经出现在完整回答状态，不能只凭局部edge或旧协议差异定位LM head忽略信息。不是信息完全消失或因果层定位证明。 |
+| 当前任务/标签接口是否有效？ | 官方配置/输入/评分核对，tied head加载无异常；固定4条明确text cue的相对AUC1.0，但全部预测SAD、accuracy50%，6条生成均不合标签格式。 | 小控制提供相对likelihood方向的正面证据，未验证固定类别阈值与输出格式；音频措辞prompt、两个模板限制解释。不能直接认定音频特有的represented-but-ignored机制。 |
+
+[模块A统一表与判断](./2026-09-16-module-a/report.md) · [验证](./2026-09-16-module-a/verification.json)。排除不兼容旧回答cache，复用当前完整decision state；仅补2条projector抽查和6条接口控制。没有新增patch、校准或插件。

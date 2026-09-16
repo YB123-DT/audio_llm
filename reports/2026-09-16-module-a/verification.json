@@ -1,0 +1,51 @@
+{
+  "remote_tests": "78 passed",
+  "local_tests": "55 passed,21 skipped (optional runtime dependencies unavailable)",
+  "compileall": "passed",
+  "shell_syntax": "passed",
+  "samples": 192,
+  "oof_rows": 1728,
+  "complete_answer_lm_parity_max": 2.4235268338834715e-06,
+  "legacy_answer_rejected": true,
+  "legacy_row_alignment": "Explicit unique sample_id plus complete representation_index permutation, tested with reordered metadata",
+  "projector_spotchecks": [
+    {
+      "sample_id": "pair_0000_happy",
+      "emotion": "happy",
+      "max_absolute_error": 0.0,
+      "mean_absolute_error": 0.0
+    },
+    {
+      "sample_id": "pair_0000_sad",
+      "emotion": "sad",
+      "max_absolute_error": 0.0,
+      "mean_absolute_error": 0.0
+    }
+  ],
+  "checkpoint": {
+    "runtime_key_count": 963,
+    "checkpoint_key_count": 296,
+    "unexpected_keys": [],
+    "shape_mismatches": [],
+    "lm_head_tied_to_embedding": true,
+    "embedding_checkpoint_loaded_max_error": 0.0
+  },
+  "text_control": {
+    "n_cases": 6,
+    "n_cue": 4,
+    "cue_accuracy": 0.5,
+    "cue_auc": 1.0,
+    "greedy_label_coverage": 0.0,
+    "score_parity_max": 1.6689300537109375e-06,
+    "limitation": "Only two lexical templates; original audio-worded prompt; no-cue has no emotion ground truth"
+  },
+  "baseline_vectors": {
+    "sha256": "0959bf267ea938082c940910544cf8d3cdcf93a7e77bc98579722fbef70d6fcb",
+    "size_bytes": 1281602,
+    "storage": "local and biggpu; excluded from Git"
+  },
+  "code_sha256": {
+    "analyze_module_a_baseline.py": "bd7404586172b0e96d40fa4bde9fee4246f4ee0e7342be93c0ab7f5717c95f18",
+    "run_module_a_interface_control.py": "c86b5e40727281a3281eceff908e46c5b1398b6a7c73e2229b783545dbdacc28"
+  }
+}
