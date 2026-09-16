@@ -1,0 +1,213 @@
+{
+  "remote_tests": "84 passed",
+  "local_tests": "59 passed, 23 skipped (optional runtime dependencies missing)",
+  "compileall": "passed",
+  "reproduce_shell_syntax": "passed",
+  "n_samples": 192,
+  "n_layers": 24,
+  "n_readouts": 50,
+  "n_fitted_probes": 3700,
+  "n_oof_rows": 28800,
+  "fold_membership_byte_identical_to_module_a": true,
+  "unique_complete_oof": true,
+  "module_a_projector_exact": true,
+  "module_a_native_margins_exact": true,
+  "module_a_source_pre_norm_exact": true,
+  "extraction_checks": {
+    "module_a_projector_max": 0.0,
+    "module_a_answer_max": 3.0517578125e-05,
+    "module_a_margin_max": 0.0,
+    "norm_head_margin_max": 2.6226043701171875e-06,
+    "postblock23_finalnorm_max": 0.0
+  },
+  "endpoint_metric_comparison": {
+    "n_comparisons": 42,
+    "max_absolute_difference": 0.00520833333333337,
+    "projector_tolerance": 1e-10,
+    "answer_exact_match": false,
+    "answer_differences": [
+      {
+        "regime": "speaker",
+        "metric": "accuracy",
+        "field": "mean",
+        "module_a": 0.6927083333333334,
+        "module_b": 0.6927083333333334,
+        "difference": 0.0
+      },
+      {
+        "regime": "speaker",
+        "metric": "accuracy",
+        "field": "ci_low",
+        "module_a": 0.6197916666666666,
+        "module_b": 0.6197916666666666,
+        "difference": 0.0
+      },
+      {
+        "regime": "speaker",
+        "metric": "accuracy",
+        "field": "ci_high",
+        "module_a": 0.765625,
+        "module_b": 0.765625,
+        "difference": 0.0
+      },
+      {
+        "regime": "speaker",
+        "metric": "roc_auc",
+        "field": "mean",
+        "module_a": 0.7316623263888888,
+        "module_b": 0.7319878472222222,
+        "difference": 0.00032552083333337034
+      },
+      {
+        "regime": "speaker",
+        "metric": "roc_auc",
+        "field": "ci_low",
+        "module_a": 0.6537489149305555,
+        "module_b": 0.6545138888888888,
+        "difference": 0.0007649739583333037
+      },
+      {
+        "regime": "speaker",
+        "metric": "roc_auc",
+        "field": "ci_high",
+        "module_a": 0.8116346571180555,
+        "module_b": 0.8119574652777778,
+        "difference": 0.0003228081597222987
+      },
+      {
+        "regime": "speaker",
+        "metric": "mean_within_fold_auc",
+        "field": "mean",
+        "module_a": 0.7630208333333334,
+        "module_b": 0.765625,
+        "difference": 0.0026041666666666297
+      },
+      {
+        "regime": "statement",
+        "metric": "accuracy",
+        "field": "mean",
+        "module_a": 0.5052083333333334,
+        "module_b": 0.5052083333333334,
+        "difference": 0.0
+      },
+      {
+        "regime": "statement",
+        "metric": "accuracy",
+        "field": "ci_low",
+        "module_a": 0.5,
+        "module_b": 0.5,
+        "difference": 0.0
+      },
+      {
+        "regime": "statement",
+        "metric": "accuracy",
+        "field": "ci_high",
+        "module_a": 0.515625,
+        "module_b": 0.515625,
+        "difference": 0.0
+      },
+      {
+        "regime": "statement",
+        "metric": "roc_auc",
+        "field": "mean",
+        "module_a": 0.5441623263888888,
+        "module_b": 0.5441623263888888,
+        "difference": 0.0
+      },
+      {
+        "regime": "statement",
+        "metric": "roc_auc",
+        "field": "ci_low",
+        "module_a": 0.5083550347222222,
+        "module_b": 0.5083550347222222,
+        "difference": 0.0
+      },
+      {
+        "regime": "statement",
+        "metric": "roc_auc",
+        "field": "ci_high",
+        "module_a": 0.5780164930555556,
+        "module_b": 0.5780164930555556,
+        "difference": 0.0
+      },
+      {
+        "regime": "statement",
+        "metric": "mean_within_fold_auc",
+        "field": "mean",
+        "module_a": 0.591796875,
+        "module_b": 0.591796875,
+        "difference": 0.0
+      },
+      {
+        "regime": "joint",
+        "metric": "accuracy",
+        "field": "mean",
+        "module_a": 0.5052083333333334,
+        "module_b": 0.5052083333333334,
+        "difference": 0.0
+      },
+      {
+        "regime": "joint",
+        "metric": "accuracy",
+        "field": "ci_low",
+        "module_a": 0.5,
+        "module_b": 0.5,
+        "difference": 0.0
+      },
+      {
+        "regime": "joint",
+        "metric": "accuracy",
+        "field": "ci_high",
+        "module_a": 0.515625,
+        "module_b": 0.515625,
+        "difference": 0.0
+      },
+      {
+        "regime": "joint",
+        "metric": "roc_auc",
+        "field": "mean",
+        "module_a": 0.5392795138888888,
+        "module_b": 0.5394965277777778,
+        "difference": 0.00021701388888895057
+      },
+      {
+        "regime": "joint",
+        "metric": "roc_auc",
+        "field": "ci_low",
+        "module_a": 0.5041232638888888,
+        "module_b": 0.5040147569444444,
+        "difference": -0.00010850694444441977
+      },
+      {
+        "regime": "joint",
+        "metric": "roc_auc",
+        "field": "ci_high",
+        "module_a": 0.5747612847222222,
+        "module_b": 0.5749782986111112,
+        "difference": 0.00021701388888895057
+      },
+      {
+        "regime": "joint",
+        "metric": "mean_within_fold_auc",
+        "field": "mean",
+        "module_a": 0.5989583333333334,
+        "module_b": 0.59375,
+        "difference": -0.00520833333333337
+      }
+    ],
+    "answer_policy": "Fresh actual final RMSNorm output retained; no posthoc metric threshold. Inspect extraction all-sample vector/head parity and these disclosed differences."
+  },
+  "uncertainty": "10000 actor-cluster draws; conditional on fitted probes; pointwise unadjusted.",
+  "code_sha256": {
+    "scripts/extract_module_b_states.py": "3aaecc11fac309585119d26a416a076984a7bd2b3a823dc1f4a41963265c132e",
+    "scripts/analyze_module_b.py": "f841f0e8dc04f12dcaad8b85afa953971dcaa27ea1fa909f58128234a9ea8b31",
+    "scripts/run_activation_patching.py": "63fcae20486c0dc659a7b13b3c7a9b6b9817ed724d41936a940c5a66945aa2fd",
+    "scripts/slam_omni_diagnostics.py": "b52100daca00a3c06db69c3f1cdba7c2a346e8b6a6f2c8e17ded26af67793d4b",
+    "scripts/analyze_module_a_baseline.py": "bd7404586172b0e96d40fa4bde9fee4246f4ee0e7342be93c0ab7f5717c95f18",
+    "scripts/analyze_edge_representation.py": "39890a26e0fe7eea6cb000b09ff7fd40b031fc11a2a534e33b0ad9082314b4da"
+  },
+  "vector_sha256": "c4bd68851b6598db8edc4fd831a693e1a131b9548817b1242503678fc74c1097",
+  "vector_storage": "local and biggpu; excluded from Git",
+  "scope": "Observational same-protocol layer-wise probes only; no interventions or model training",
+  "git_whitespace_check": "Passed with core.whitespace=trailing-space,space-before-tab,cr-at-eol; metadata CSV preserves original CRLF and source hash."
+}

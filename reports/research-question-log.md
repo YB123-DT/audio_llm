@@ -115,3 +115,12 @@ Q5 已通过 forced-choice 和 activation patching 收窄，但仍未完成 rout
 | 当前任务/标签接口是否有效？ | 官方配置/输入/评分核对，tied head加载无异常；固定4条明确text cue的相对AUC1.0，但全部预测SAD、accuracy50%，6条生成均不合标签格式。 | 小控制提供相对likelihood方向的正面证据，未验证固定类别阈值与输出格式；音频措辞prompt、两个模板限制解释。不能直接认定音频特有的represented-but-ignored机制。 |
 
 [模块A统一表与判断](./2026-09-16-module-a/report.md) · [验证](./2026-09-16-module-a/verification.json)。排除不兼容旧回答cache，复用当前完整decision state；仅补2条projector抽查和6条接口控制。没有新增patch、校准或插件。
+
+
+## Q29：模块B统一decoder逐层可读性（2026-09-16）
+
+| 核心问题 | 同协议结果 | 判断与限制 |
+|---|---|---|
+| Projector的强跨文本情绪信息进入Qwen后，是突然丢失、逐层减弱，还是只留在audio位置？ | 复用Module A的192样本/fold/train-only标准化/C=1 probe，对24个完整block的audio mean与完整answer state统一比较。Joint answer pooled AUC：block0 0.9154→block1 0.7885→block6 0.6033→block23 0.5412；audio的全部层mean within-fold AUC保持0.9583–0.9844。 | Answer早期已可读，随后分阶段、非单调减弱；audio排序信息持续保留。不能说从未到达answer，也不能由pooled曲线定位唯一因果故障层。Audio中后期pooled AUC下降/最终回升与within-fold轨迹不一致，不能直接称为信息丢失/恢复。 |
+
+[统一曲线与判断](./2026-09-16-module-b/report.md) · [验证](./2026-09-16-module-b/verification.json)。旧逐层cache不兼容，补192条各一次冻结decoder forward；Projector/native margin及raw最后answer端点精确核对。实际GPU final RMSNorm与Module A CPU重建的微小差异及其指标变化全部披露；无patch、校准或插件训练。

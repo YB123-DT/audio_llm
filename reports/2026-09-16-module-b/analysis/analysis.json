@@ -1,0 +1,202 @@
+{
+  "n_samples": 192,
+  "n_actors": 24,
+  "n_representation_readouts": 50,
+  "answer_head_parity_max": 1.8637040652969006e-06,
+  "module_a_endpoint_comparison": {
+    "n_comparisons": 42,
+    "max_absolute_difference": 0.00520833333333337,
+    "projector_tolerance": 1e-10,
+    "answer_exact_match": false,
+    "answer_differences": [
+      {
+        "regime": "speaker",
+        "metric": "accuracy",
+        "field": "mean",
+        "module_a": 0.6927083333333334,
+        "module_b": 0.6927083333333334,
+        "difference": 0.0
+      },
+      {
+        "regime": "speaker",
+        "metric": "accuracy",
+        "field": "ci_low",
+        "module_a": 0.6197916666666666,
+        "module_b": 0.6197916666666666,
+        "difference": 0.0
+      },
+      {
+        "regime": "speaker",
+        "metric": "accuracy",
+        "field": "ci_high",
+        "module_a": 0.765625,
+        "module_b": 0.765625,
+        "difference": 0.0
+      },
+      {
+        "regime": "speaker",
+        "metric": "roc_auc",
+        "field": "mean",
+        "module_a": 0.7316623263888888,
+        "module_b": 0.7319878472222222,
+        "difference": 0.00032552083333337034
+      },
+      {
+        "regime": "speaker",
+        "metric": "roc_auc",
+        "field": "ci_low",
+        "module_a": 0.6537489149305555,
+        "module_b": 0.6545138888888888,
+        "difference": 0.0007649739583333037
+      },
+      {
+        "regime": "speaker",
+        "metric": "roc_auc",
+        "field": "ci_high",
+        "module_a": 0.8116346571180555,
+        "module_b": 0.8119574652777778,
+        "difference": 0.0003228081597222987
+      },
+      {
+        "regime": "speaker",
+        "metric": "mean_within_fold_auc",
+        "field": "mean",
+        "module_a": 0.7630208333333334,
+        "module_b": 0.765625,
+        "difference": 0.0026041666666666297
+      },
+      {
+        "regime": "statement",
+        "metric": "accuracy",
+        "field": "mean",
+        "module_a": 0.5052083333333334,
+        "module_b": 0.5052083333333334,
+        "difference": 0.0
+      },
+      {
+        "regime": "statement",
+        "metric": "accuracy",
+        "field": "ci_low",
+        "module_a": 0.5,
+        "module_b": 0.5,
+        "difference": 0.0
+      },
+      {
+        "regime": "statement",
+        "metric": "accuracy",
+        "field": "ci_high",
+        "module_a": 0.515625,
+        "module_b": 0.515625,
+        "difference": 0.0
+      },
+      {
+        "regime": "statement",
+        "metric": "roc_auc",
+        "field": "mean",
+        "module_a": 0.5441623263888888,
+        "module_b": 0.5441623263888888,
+        "difference": 0.0
+      },
+      {
+        "regime": "statement",
+        "metric": "roc_auc",
+        "field": "ci_low",
+        "module_a": 0.5083550347222222,
+        "module_b": 0.5083550347222222,
+        "difference": 0.0
+      },
+      {
+        "regime": "statement",
+        "metric": "roc_auc",
+        "field": "ci_high",
+        "module_a": 0.5780164930555556,
+        "module_b": 0.5780164930555556,
+        "difference": 0.0
+      },
+      {
+        "regime": "statement",
+        "metric": "mean_within_fold_auc",
+        "field": "mean",
+        "module_a": 0.591796875,
+        "module_b": 0.591796875,
+        "difference": 0.0
+      },
+      {
+        "regime": "joint",
+        "metric": "accuracy",
+        "field": "mean",
+        "module_a": 0.5052083333333334,
+        "module_b": 0.5052083333333334,
+        "difference": 0.0
+      },
+      {
+        "regime": "joint",
+        "metric": "accuracy",
+        "field": "ci_low",
+        "module_a": 0.5,
+        "module_b": 0.5,
+        "difference": 0.0
+      },
+      {
+        "regime": "joint",
+        "metric": "accuracy",
+        "field": "ci_high",
+        "module_a": 0.515625,
+        "module_b": 0.515625,
+        "difference": 0.0
+      },
+      {
+        "regime": "joint",
+        "metric": "roc_auc",
+        "field": "mean",
+        "module_a": 0.5392795138888888,
+        "module_b": 0.5394965277777778,
+        "difference": 0.00021701388888895057
+      },
+      {
+        "regime": "joint",
+        "metric": "roc_auc",
+        "field": "ci_low",
+        "module_a": 0.5041232638888888,
+        "module_b": 0.5040147569444444,
+        "difference": -0.00010850694444441977
+      },
+      {
+        "regime": "joint",
+        "metric": "roc_auc",
+        "field": "ci_high",
+        "module_a": 0.5747612847222222,
+        "module_b": 0.5749782986111112,
+        "difference": 0.00021701388888895057
+      },
+      {
+        "regime": "joint",
+        "metric": "mean_within_fold_auc",
+        "field": "mean",
+        "module_a": 0.5989583333333334,
+        "module_b": 0.59375,
+        "difference": -0.00520833333333337
+      }
+    ],
+    "answer_policy": "Fresh actual final RMSNorm output retained; no posthoc metric threshold. Inspect extraction all-sample vector/head parity and these disclosed differences."
+  },
+  "sources_sha256": {
+    "reports/2026-09-16-module-b/decoder_states.npz": "c4bd68851b6598db8edc4fd831a693e1a131b9548817b1242503678fc74c1097",
+    "reports/2026-09-16-module-b/metadata.csv": "9b1146797bfe77164f2bf0192070411a4903affe873532cbe3bc1156b8b35d85",
+    "reports/2026-09-16-module-a/baseline_analysis/summary.csv": "4e290048cc94b5b92fe161254e57467b249b5cba78c290324d305cc621f69f8a",
+    "/data2/yb/paper/audio_llm/scripts/analyze_module_b.py": "418076c604f01baae627b6df402603f71e43364dfcd41fc9807542fbf0625920"
+  },
+  "sklearn_version": "1.7.2",
+  "bootstrap": 10000,
+  "seed": 20260915,
+  "protocol": "Exact Module A folds and metrics; train-only StandardScaler; LogisticRegression C=1 lbfgs max_iter=5000; happy=1; zero predicts sad; no tuning.",
+  "positions": "Audio-token mean and complete answer position, after each decoder block 0..23 before final RMSNorm. Final RMSNorm answer shown separately, not as a 25th decoder block.",
+  "uncertainty": "Actor-cluster percentile 95%, fixed fitted folds, no refitting, pointwise unadjusted; within-fold AUC descriptive.",
+  "pooled_auc": "OOF scores come from different fitted models; pooled AUC can reflect fold offsets. Mean within-fold AUC also saved.",
+  "scope": "Observational linear readability only; not a causal localization or proof that information is destroyed.",
+  "plot_revision": {
+    "reason": "Expose pooled versus within-fold AUC differences in same figure; separate final norm marker from block23.",
+    "numerical_analysis": "Unchanged: regenerated PNG/PDF from existing summary.csv; no model forward or probe refitting.",
+    "plot_script_sha256": "f841f0e8dc04f12dcaad8b85afa953971dcaa27ea1fa909f58128234a9ea8b31"
+  }
+}
