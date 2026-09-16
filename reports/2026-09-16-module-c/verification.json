@@ -1,0 +1,48 @@
+{
+  "remote_tests": "108 passed",
+  "local_tests": "81 passed, 25 skipped (optional runtime dependencies missing)",
+  "compileall": "passed",
+  "shell_syntax": "passed",
+  "n_samples": 192,
+  "n_layers": 24,
+  "n_states": 72,
+  "n_new_probe_fits": 2400,
+  "n_reused_states": 47,
+  "n_oof_rows": 27648,
+  "unique_complete_oof": true,
+  "fold_membership_matches_previous": true,
+  "reused_predictions_exact": true,
+  "post_mlp_summary_ci_max_difference": 0.0,
+  "initial_input_auc": 0.5,
+  "point_telescoping_max_error": 0.0,
+  "paired_draw_telescoping_max_error": 2.220446049250313e-16,
+  "extraction_checks": {
+    "module_b_all_block_outputs_max": 0.0,
+    "module_b_final_norm_max": 0.0,
+    "module_b_margin_max": 0.0,
+    "adjacent_block_residual_max": 0.0,
+    "block0_input_between_samples_max": 0.0,
+    "attention_residual_add_max": 0.0,
+    "mlp_residual_add_max": 0.0,
+    "norm_head_margin_max": 2.6226043701171875e-06
+  },
+  "vector_sha256": "329dc0a81de2ee7397c27646c404e75b7726679a42a4c57049b0750c896a31cf",
+  "vector_storage": "local and biggpu; ignored by Git",
+  "source_sha256": {
+    "reports/2026-09-16-module-c/sublayer_states.npz": "329dc0a81de2ee7397c27646c404e75b7726679a42a4c57049b0750c896a31cf",
+    "reports/2026-09-16-module-b/decoder_states.npz": "c4bd68851b6598db8edc4fd831a693e1a131b9548817b1242503678fc74c1097",
+    "reports/2026-09-16-module-b/metadata.csv": "9b1146797bfe77164f2bf0192070411a4903affe873532cbe3bc1156b8b35d85",
+    "reports/2026-09-16-answer-content/oof_predictions.csv": "7889c550a9e26386e4254f5161d23897dba7d99f075feb6ab5ec0e90a8450a6e",
+    "reports/2026-09-16-answer-content/analysis.json": "f3ef9ce15bff9ae9d1b287bcfb063053e053ee809dd3af5dc73ddad83b5366e2",
+    "/data2/yb/paper/audio_llm/scripts/analyze_module_c.py": "46791249a52b68ac35c200dbf468c196694600e00a98caff96e980247f722982"
+  },
+  "runtime_dependency_sha256": {
+    "scripts/extract_module_c_states.py": "2ee4683831728b307e15da1d414eb4968fec0350b9749868482fc2b571650de7",
+    "scripts/run_activation_patching.py": "63fcae20486c0dc659a7b13b3c7a9b6b9817ed724d41936a940c5a66945aa2fd",
+    "scripts/slam_omni_diagnostics.py": "b52100daca00a3c06db69c3f1cdba7c2a346e8b6a6f2c8e17ded26af67793d4b",
+    "scripts/analyze_answer_content.py": "bf0e934f846525e8b1538bd854a9859e206c2202e1d2042c7c8caaea03985b90",
+    "scripts/analyze_edge_representation.py": "39890a26e0fe7eea6cb000b09ff7fd40b031fc11a2a534e33b0ad9082314b4da",
+    "scripts/analyze_module_b.py": "f841f0e8dc04f12dcaad8b85afa953971dcaa27ea1fa909f58128234a9ea8b31"
+  },
+  "scope": "Normal forward observational residual boundaries only; no ablation, patch, calibration, or model training; pointwise fixed-probe uncertainty, no causal mediation claim."
+}

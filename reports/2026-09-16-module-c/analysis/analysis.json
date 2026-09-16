@@ -1,0 +1,31 @@
+{
+  "n_samples": 192,
+  "n_actors": 24,
+  "n_states": 72,
+  "new_probe_fits": 2400,
+  "reused_state_count": 47,
+  "seed": 20260915,
+  "bootstrap": 10000,
+  "sklearn_version": "1.7.2",
+  "exact_vector_parity": {
+    "post_mlp_reference": 0.0,
+    "residual_continuity": 0.0,
+    "final_norm": 0.0,
+    "margins": 0.0,
+    "head_direction": 0.0
+  },
+  "telescoping_max_error": 2.220446049250313e-16,
+  "source_sha256": {
+    "reports/2026-09-16-module-c/sublayer_states.npz": "329dc0a81de2ee7397c27646c404e75b7726679a42a4c57049b0750c896a31cf",
+    "reports/2026-09-16-module-b/decoder_states.npz": "c4bd68851b6598db8edc4fd831a693e1a131b9548817b1242503678fc74c1097",
+    "reports/2026-09-16-module-b/metadata.csv": "9b1146797bfe77164f2bf0192070411a4903affe873532cbe3bc1156b8b35d85",
+    "reports/2026-09-16-answer-content/oof_predictions.csv": "7889c550a9e26386e4254f5161d23897dba7d99f075feb6ab5ec0e90a8450a6e",
+    "reports/2026-09-16-answer-content/analysis.json": "f3ef9ce15bff9ae9d1b287bcfb063053e053ee809dd3af5dc73ddad83b5366e2",
+    "/data2/yb/paper/audio_llm/scripts/analyze_module_c.py": "46791249a52b68ac35c200dbf468c196694600e00a98caff96e980247f722982"
+  },
+  "protocol": "Within: 23 other actors same statement; cross: 23 other actors other statement; both 92 train and identical 4 test. Train-only StandardScaler, C=1 logistic lbfgs max_iter=5000, happy=1. Zero score predicts sad.",
+  "primary": "Mean actor x statement fold AUC. Combined macro-averages two statements. Gap within minus cross. Supplemental accuracy and pooled OOF AUC.",
+  "bootstrap_method": "Shared actor-cluster draws across every state and condition, retaining both statements; fixed fitted probes, 95% percentile, pointwise unadjusted; deltas computed within each draw.",
+  "reuse": "Exact Module B post-MLP vector and consecutive residual parity required before reusing within/cross OOF. Only 24 post-attention states and block 0 input fitted.",
+  "interpretation": "Normal-forward observational probe differences, independently fitted readouts at each state, not causal ablation or additive mediation. Aggregate sums blocks 1..23 exclude block 0 initialization; final RMSNorm not part of sublayer contrasts."
+}

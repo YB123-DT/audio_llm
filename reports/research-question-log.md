@@ -133,3 +133,12 @@ Q5 已通过 forced-choice 和 activation patching 收窄，但仍未完成 rout
 | 后期跨文本下降是句内线性可读性也退化，还是只剩content-conditioned code？ | 复用Module B answer states；within/cross均训练其他23actors、92样本，测试同actor同statement4样本。主指标mean actor-fold AUC：within block0 0.9375→block23 0.7083；cross block23 0.6042，G+0.1042 CI[−0.0052,0.2083]。N：within0.7031/cross0.5938，G+0.1094 CI[0.0052,0.2135]。 | 句内下降与额外跨文本损失同时存在。Block23测试01的G+0.2813，测试02的G−0.0729且CI跨零，不能称为两句对称旋转。合并block23 gap不确定，N仅点态未校正区间略正；尚无具体decoder因果机制或direction旋转证明。 |
 
 [曲线与报告](./2026-09-16-answer-content/report.md) · [验证](./2026-09-16-answer-content/verification.json)。仅CPU外部probe，未重新forward；pooled AUC另报，不与折内平均AUC混算gap。
+
+
+## Q31：Module C 正常forward的Attention/MLP边界（2026-09-16）
+
+| 核心问题 | 观察与匹配协议 | 判断与边界 |
+|---|---|---|
+| Within可读性下降与content gap增加分别发生在哪种子层之后？ | 192样本每条正常forward一次，保存完整answer的in/post-attn/post-MLP；全部out与Module B精确一致。Block0 W=0.5→0.9375→0.9375。固定blocks1–23合并ΣΔW：Attention−0.2292 CI[−0.3802,−0.0833]，MLP≈0 CI[−0.1146,0.1094]。ΣΔG：Attention−0.0365 CI[−0.2344,0.1615]，MLP+0.1302 CI[−0.0417,0.3021]。 | 净within可读性下降主要位于Attention更新边界；MLP净和零包含正负抵消，不是无作用。合并G归属仍不确定，不能确立“Attention丢情绪、MLP造content dependence”的机制分工。差值和为观察性望远镜恒等式，不是因果mediation比例；未ablate。 |
+
+[Module C图与报告](./2026-09-16-module-c/report.md) · [验证](./2026-09-16-module-c/verification.json)。沿用同actor同测试样本的within/cross probe；共享actor-bootstrap，区间点态未校正；声明并保留statement方向不对称。
