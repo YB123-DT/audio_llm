@@ -1,0 +1,20 @@
+{
+  "checkpoint": {
+    "filename": "model.safetensors",
+    "bytes": 3856817560,
+    "sha256": "a34de68dc82e051d01f4c6e32c43addaf6f52721cc4e89db06868b616b76fc5c",
+    "official_digest_match": true
+  },
+  "whisper": {
+    "filename": "large-v3.pt",
+    "bytes": 3087371615,
+    "sha256": "e5b1a55b89c1367dacf97e3e19bfd829a01529dbfdeefa8caeb59b3f1b81dadb",
+    "official_digest_match": true
+  },
+  "model_source": "https://huggingface.co/ICTNLP/LLaMA-Omni2-0.5B",
+  "model_revision": "a16aa9a4ea3f2f363c3db728e8e83ee08e60922c",
+  "code_source": "https://github.com/ictnlp/LLaMA-Omni2",
+  "code_commit": "c8afa9061a9c2d2c1919f7293f5492d946869752",
+  "whisper_source": "https://openaipublic.azureedge.net/main/whisper/models/e5b1a55b89c1367dacf97e3e19bfd829a01529dbfdeefa8caeb59b3f1b81dadb/large-v3.pt",
+  "storage": "Model weights and encoder retained locally and on biggpu, outside Git."
+}

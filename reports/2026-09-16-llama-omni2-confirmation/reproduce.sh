@@ -6,6 +6,8 @@ omni2_report=reports/2026-09-16-llama-omni2-confirmation
 omni2_dataset=${1:?Choose ravdess or crema-d}
 omni2_gpu=${2:-6}
 export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
+export PATH="$(dirname "$omni2_python"):$PATH"
+command -v ffmpeg >/dev/null
 case "$omni2_dataset" in
  ravdess)
   omni2_manifest=artifacts/ravdess_happy_sad_intensity01.csv
