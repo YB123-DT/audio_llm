@@ -142,3 +142,12 @@ Q5 已通过 forced-choice 和 activation patching 收窄，但仍未完成 rout
 | Within可读性下降与content gap增加分别发生在哪种子层之后？ | 192样本每条正常forward一次，保存完整answer的in/post-attn/post-MLP；全部out与Module B精确一致。Block0 W=0.5→0.9375→0.9375。固定blocks1–23合并ΣΔW：Attention−0.2292 CI[−0.3802,−0.0833]，MLP≈0 CI[−0.1146,0.1094]。ΣΔG：Attention−0.0365 CI[−0.2344,0.1615]，MLP+0.1302 CI[−0.0417,0.3021]。 | 净within可读性下降主要位于Attention更新边界；MLP净和零包含正负抵消，不是无作用。合并G归属仍不确定，不能确立“Attention丢情绪、MLP造content dependence”的机制分工。差值和为观察性望远镜恒等式，不是因果mediation比例；未ablate。 |
 
 [Module C图与报告](./2026-09-16-module-c/report.md) · [验证](./2026-09-16-module-c/verification.json)。沿用同actor同测试样本的within/cross probe；共享actor-bootstrap，区间点态未校正；声明并保留statement方向不对称。
+
+
+## Q32：固定blocks1–6 answer-update因果确认（2026-09-16）
+
+| 核心问题 | 预定干预与主终点 | 判断与停止 |
+|---|---|---|
+| 早期Attention更新是否对answer线性可读性下降有因果贡献？ | 仅阻断answer行，clean/no-attn/no-MLP；主终点block6 within mean actor-fold AUC为0.7656/0.9219/0.7552。ΔA+0.1563 CI[0.0729,0.2448]；ΔA−M+0.1667 CI[0.0677,0.2865]。所有非answer位置逐层bitwise保持clean。 | 支持指定干预下early answer-position Attention updates对线性可读性损失的因果贡献；未定位lexical/audio/prompt来源。Final状态ΔA+0.0417 CI[0,0.0885]，未形成可靠最终修复证据，未检验原LM行为改善。完成三个固定条件后停止，无追加搜索。 |
+
+[最后一次固定干预报告](./2026-09-16-early-answer-causal/report.md) · [验证](./2026-09-16-early-answer-causal/verification.json)。区间为配对actor-bootstrap、固定拟合probe、未多重校正；statement02主对比子组CI下界触及零，保留泛化限制。

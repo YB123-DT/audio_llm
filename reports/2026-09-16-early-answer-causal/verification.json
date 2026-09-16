@@ -1,0 +1,45 @@
+{
+  "date": "2026-09-16",
+  "status": "passed",
+  "artifact_sha256": "ecdecd9be6b5f82784af30be518d1920a93477630894ca194239b0f7f8b13934",
+  "all_analysis_source_hashes_match": true,
+  "unique_oof_rows": 1152,
+  "clean_cached_prediction_rows_exact_match": 384,
+  "csv_row_counts": {
+    "fold_metrics.csv": 288,
+    "fold_membership.csv": 4608,
+    "summary.csv": 54,
+    "contrasts.csv": 54
+  },
+  "runtime_checks": {
+    "nonanswer_block_comparisons": 9216,
+    "suppressed_update_calls": 2304,
+    "clean_block6_max": 0.0,
+    "clean_final_max": 0.0,
+    "clean_margin_max": 0.0
+  },
+  "tests": {
+    "remote": {
+      "passed": 115,
+      "failed": 0
+    },
+    "local": {
+      "passed": 85,
+      "skipped": 27,
+      "failed": 0,
+      "skip_reason": "optional runtime dependencies unavailable"
+    }
+  },
+  "syntax": {
+    "local_compileall": "passed",
+    "remote_compileall": "passed",
+    "reproduce_bash_n": "passed"
+  },
+  "independent_review": "PASS: implementation, artifact hashes, all six endpoint means, primary contrasts and report claims checked",
+  "figure_visual_check": "passed",
+  "limitations": [
+    "Bootstrap intervals conditional on fitted probes, not refit uncertainty.",
+    "No native LM-head improvement evaluated.",
+    "Final-state contrasts touch or cross zero."
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "n_samples": 192,
+  "n_actors": 24,
+  "n_new_probe_fits": 192,
+  "clean_probe_fits_reused": 96,
+  "seed": 20260915,
+  "bootstrap": 10000,
+  "sklearn_version": "1.7.2",
+  "clean_vectors_exact_match": true,
+  "sources_sha256": {
+    "reports/2026-09-16-early-answer-causal/intervention_states.npz": "ecdecd9be6b5f82784af30be518d1920a93477630894ca194239b0f7f8b13934",
+    "reports/2026-09-16-module-b/decoder_states.npz": "c4bd68851b6598db8edc4fd831a693e1a131b9548817b1242503678fc74c1097",
+    "reports/2026-09-16-module-b/metadata.csv": "9b1146797bfe77164f2bf0192070411a4903affe873532cbe3bc1156b8b35d85",
+    "reports/2026-09-16-answer-content/oof_predictions.csv": "7889c550a9e26386e4254f5161d23897dba7d99f075feb6ab5ec0e90a8450a6e",
+    "reports/2026-09-16-answer-content/analysis.json": "f3ef9ce15bff9ae9d1b287bcfb063053e053ee809dd3af5dc73ddad83b5366e2",
+    "/data2/yb/paper/audio_llm/scripts/analyze_early_answer_causal.py": "89714e2a87890ececbfa8a4f7275ef3608e7f7f0e7736305b58d64c96823c03c",
+    "/data2/yb/paper/audio_llm/scripts/analyze_answer_content.py": "bf0e934f846525e8b1538bd854a9859e206c2202e1d2042c7c8caaea03985b90"
+  },
+  "protocol": "Within each statement, leave one actor out: 92 train/4 test. Train-only StandardScaler; LogisticRegression C=1 lbfgs max_iter=5000; happy=1. Separate external classifier fits for each intervention and endpoint. Clean cached predictions reused only after exact vector/identity and provenance parity.",
+  "primary": "Block 6 mean actor x statement fold AUC; contrasts no_attn-clean and no_attn-no_mlp. Combined macro mean; statement-specific breakdown.",
+  "secondary": "Final RMSNorm answer state. No native LM-head performance claim. Pooled AUC/accuracy and no_mlp-clean are descriptive secondary metrics.",
+  "uncertainty": "Paired actor-cluster percentile 95% bootstrap, same 10000 draws by default across conditions/endpoints/statements; both statements of each actor retained; fixed fitted probes, no bootstrap refits, unadjusted intervals.",
+  "scope": "Three fixed conditions only; external linear readability under intervention, not semantic source attribution or proof of information deletion."
+}
